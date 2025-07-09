@@ -29,7 +29,15 @@ CREATE TABLE company (
 -- System
 CREATE TABLE system (
     id INTEGER PRIMARY KEY,
-    entity_id INTEGER REFERENCES entity(id)
+    entity_id INTEGER REFERENCES entity(id),
+    alternative_name TEXT,
+    abbreviation TEXT,
+
+);
+
+CREATE TABLE system_category (
+    id INTEGER PRIMARY KEY,
+    name TEXT
 );
 
 -- PlayedOn (Game ↔ System)
@@ -226,4 +234,19 @@ CREATE TABLE dlc (
     game_id INTEGER REFERENCES game(id),
     dlc_id INTEGER REFERENCES game(id),
     PRIMARY KEY (game_id, dlc_id)
+);
+
+
+-- Memory for importing game info from IGDB
+
+CREATE TABLE last_imported (
+    game_id INTEGER UNIQUE,
+    company_id INTEGER UNIQUE,
+    system_id INTEGER UNIQUE
+);
+
+CREATE TABLE last_updated (
+    game_id INTEGER UNIQUE REFERENCES game(id),
+    company_id INTEGER UNIQUE REFERENCES company(id),
+    system_id INTEGER UNIQUE REFERENCES system(id)
 );
