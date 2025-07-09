@@ -1,6 +1,6 @@
 -- Profile
 CREATE TABLE profile (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     auth_user_id UUID REFERENCES auth.users(id),
     name TEXT,
     birthday TIMESTAMP,
@@ -9,26 +9,26 @@ CREATE TABLE profile (
 
 -- Entity (abstract base for game, company, system, etc.)
 CREATE TABLE entity (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT,
     description TEXT
 );
 
 -- Game
 CREATE TABLE game (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     entity_id INTEGER REFERENCES entity(id)
 );
 
 -- Company
 CREATE TABLE company (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     entity_id INTEGER REFERENCES entity(id)
 );
 
 -- System
 CREATE TABLE system (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     entity_id INTEGER REFERENCES entity(id)
 );
 
@@ -56,7 +56,7 @@ CREATE TABLE game_owned (
 
 -- Badge
 CREATE TABLE badge (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT,
     icon_url TEXT,
     description TEXT
@@ -71,7 +71,7 @@ CREATE TABLE badges_earned (
 
 -- Reviews
 CREATE TABLE reviews (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     system_id INTEGER REFERENCES system(id),
     game_id INTEGER REFERENCES game(id),
     profile_id INTEGER REFERENCES profile(id),
@@ -83,7 +83,7 @@ CREATE TABLE reviews (
 
 -- PopularityEnum
 CREATE TABLE popularity_enum (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     type TEXT
 );
 
@@ -97,7 +97,7 @@ CREATE TABLE popularity (
 
 -- Country (wraps Entity)
 CREATE TABLE country (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     entity_id INTEGER REFERENCES entity(id)
 );
 
@@ -110,13 +110,13 @@ CREATE TABLE released_in (
 
 -- RatingSystem
 CREATE TABLE rating_system (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT
 );
 
 -- RatingEnum (e.g. ESRB M, PEGI 18)
 CREATE TABLE rating_enum (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     system_id INTEGER REFERENCES rating_system(id),
     name TEXT,
     age INTEGER
@@ -132,7 +132,7 @@ CREATE TABLE age_rating (
 
 -- ArtworkEnum
 CREATE TABLE artwork_enum (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     type TEXT
 );
 
@@ -155,7 +155,7 @@ CREATE TABLE time_to_play (
 
 -- Franchise
 CREATE TABLE franchise (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT
 );
 
@@ -168,7 +168,7 @@ CREATE TABLE entry_in_franchise (
 
 -- GenreEnum
 CREATE TABLE genre_enum (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT
 );
 
@@ -195,7 +195,7 @@ CREATE TABLE published (
 
 -- Series
 CREATE TABLE series (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT,
     description TEXT
 );
