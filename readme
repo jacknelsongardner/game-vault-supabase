@@ -1,0 +1,4 @@
+Setting up environment : 
+
+1. Begin by running: npx supabase start
+2. After a few minutes, use your browser to navigate to localhost:54323 to view the database in it's current state

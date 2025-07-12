@@ -30,15 +30,24 @@ CREATE TABLE company (
 CREATE TABLE system (
     id INTEGER PRIMARY KEY,
     entity_id INTEGER REFERENCES entity(id),
-    alternative_name TEXT,
     abbreviation TEXT,
-
+    --system_family INTEGER REFERENCES system_family(id),
+    --system_category INTEGER REFERENCES system_category(id),
+    --system_logo INTEGER REFERENCES artwork(id)
 );
 
 CREATE TABLE system_category (
     id INTEGER PRIMARY KEY,
     name TEXT
 );
+
+CREATE TABLE system_family (
+    id INTEGER PRIMARY KEY,
+    company INTEGER REFERENCES company(id),
+    name TEXT
+);
+
+
 
 -- PlayedOn (Game ↔ System)
 CREATE TABLE played_on (
