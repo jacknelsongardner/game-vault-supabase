@@ -9,7 +9,7 @@ CREATE TABLE profile (
 
 -- Entity (abstract base for game, company, system, etc.)
 CREATE TABLE entity (
-    id INTEGER PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     name TEXT,
     description TEXT
 );
@@ -17,19 +17,19 @@ CREATE TABLE entity (
 -- Game
 CREATE TABLE game (
     id INTEGER PRIMARY KEY,
-    entity_id INTEGER REFERENCES entity(id)
+    entity_id TEXT REFERENCES entity(id)
 );
 
 -- Company
 CREATE TABLE company (
     id INTEGER PRIMARY KEY,
-    entity_id INTEGER REFERENCES entity(id)
+    entity_id TEXT REFERENCES entity(id)
 );
 
 -- System
 CREATE TABLE system (
     id INTEGER PRIMARY KEY,
-    entity_id INTEGER REFERENCES entity(id),
+    entity_id TEXT REFERENCES entity(id),
     abbreviation TEXT,
     --system_family INTEGER REFERENCES system_family(id),
     --system_category INTEGER REFERENCES system_category(id),
@@ -106,7 +106,7 @@ CREATE TABLE popularity_enum (
 
 -- Popularity (Entity ↔ PopularityEnum)
 CREATE TABLE popularity (
-    entity_id INTEGER REFERENCES entity(id),
+    entity_id TEXT REFERENCES entity(id),
     popularity_enum_id INTEGER REFERENCES popularity_enum(id),
     score FLOAT,
     PRIMARY KEY (entity_id, popularity_enum_id)
@@ -115,7 +115,7 @@ CREATE TABLE popularity (
 -- Country (wraps Entity)
 CREATE TABLE country (
     id INTEGER PRIMARY KEY,
-    entity_id INTEGER REFERENCES entity(id)
+    entity_id TEXT REFERENCES entity(id)
 );
 
 -- ReleasedIn (Game ↔ Country)
@@ -155,7 +155,7 @@ CREATE TABLE artwork_enum (
 
 -- Artwork (Entity ↔ ArtworkEnum)
 CREATE TABLE artwork (
-    entity_id INTEGER REFERENCES entity(id),
+    entity_id TEXT REFERENCES entity(id),
     artwork_enum_id INTEGER REFERENCES artwork_enum(id),
     image_url TEXT,
     PRIMARY KEY (entity_id, artwork_enum_id)
@@ -248,14 +248,18 @@ CREATE TABLE dlc (
 
 -- Memory for importing game info from IGDB
 
-CREATE TABLE last_imported (
+CREATE TABLE last_system_imported (
     game_id INTEGER UNIQUE,
-    company_id INTEGER UNIQUE,
-    system_id INTEGER UNIQUE
+    continue BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE last_updated (
+CREATE TABLE last_system_updated (
     game_id INTEGER UNIQUE REFERENCES game(id),
-    company_id INTEGER UNIQUE REFERENCES company(id),
-    system_id INTEGER UNIQUE REFERENCES system(id)
+    continue BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE error_log (
+    id SERIAL PRIMARY KEY,
+    error_message TEXT,
+    error_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

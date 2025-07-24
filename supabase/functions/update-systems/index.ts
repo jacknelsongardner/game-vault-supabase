@@ -5,10 +5,12 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 console.log("Hello from Functions!")
 
 
-function getIGDBToken() {
+async function getIGDBToken() {
   
     const auth_response = await fetch("https://id.twitch.tv/oauth2/token?client_id=eo11l1fe0ka6cbupy2foe8yjqloqv8&client_secret=x9pgfvyp8bo5xw0qh56t02l2pjoena&grant_type=client_credentials", {
       method: "POST",
@@ -28,9 +30,9 @@ function getIGDBToken() {
     return token;
 }
 
-function sendIGDBRequest(request, token) {
+async function sendIGDBRequest(request, endpoint, token) {
   
-  const response = await fetch("https://api.igdb.com/v4/platforms", {
+  const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,8 +45,11 @@ function sendIGDBRequest(request, token) {
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
+  let jsonResponse = await response.json();
+  console.log("Response from IGDB:", jsonResponse);
   
-  return await response;
+  return jsonResponse;
 }
 
 
@@ -58,16 +63,53 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    var token = getIGDBToken();
+    var token =  await getIGDBToken();
+    const response =  await sendIGDBRequest("fields *; limit 260; ", "platforms", token);
 
-    // TODO: Change the table_name to your table
-    const { data, error } = await supabase.from('table_name').select('*')
 
-    if (error) {
-      throw error
+    for (var platform of response) {
+      
+
+      var platform_id = platform.id;
+      var id = `S${platform_id}`;  // No need to stringify a number for this use case
+      var entity_id = id;
+      var description = platform.summary; 
+      var name = platform.name;
+
+      console.log(`Processing entity: ${platform.name} with json: ${JSON.stringify(platform)}`);
+
+      // Adding to supabase
+      const { data: entityData, error: entityError } = await supabase
+          .from('entity')
+          .upsert({ id, name, description })
+          .select();
+      
+
+      console.log(`Processing system: ${name} with json: ${JSON.stringify(platform)}`);
+
+      id = platform.id; 
+      const { data: systemData, error: systemError } = await supabase
+          .from('system')
+          .upsert({ id, entity_id })
+          .select();
+
+      if (entityError) {
+        console.log(`Error upserting entity: ${entityError.message}`);
+      }
+
+      if (systemError) {
+        console.log(`Error upserting system: ${systemError.message}`);
+      }
+
+      if (systemError || entityError) {
+        break;
+      }
+
+      var data = { entityData, systemData };
+      console.log(`Upserted platform: ${name} with ID: ${id}`);
     }
 
-    return new Response(JSON.stringify({ data }), {
+    return new Response(JSON.stringify({ response }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     })
@@ -78,15 +120,3 @@ Deno.serve(async (req) => {
     })
   }
 })
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/update-systems' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
