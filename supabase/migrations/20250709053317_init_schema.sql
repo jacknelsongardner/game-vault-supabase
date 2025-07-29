@@ -7,33 +7,21 @@ CREATE TABLE profile (
     avatar_url TEXT
 );
 
--- Entity (abstract base for game, company, system, etc.)
-CREATE TABLE entity (
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    description TEXT
-);
-
 -- Game
 CREATE TABLE game (
-    id INTEGER PRIMARY KEY,
-    entity_id TEXT REFERENCES entity(id)
+    id INTEGER PRIMARY KEY
 );
 
 -- Company
 CREATE TABLE company (
-    id INTEGER PRIMARY KEY,
-    entity_id TEXT REFERENCES entity(id)
+    id INTEGER PRIMARY KEY
 );
 
 -- System
 CREATE TABLE system (
     id INTEGER PRIMARY KEY,
-    entity_id TEXT REFERENCES entity(id),
-    abbreviation TEXT,
-    --system_family INTEGER REFERENCES system_family(id),
-    --system_category INTEGER REFERENCES system_category(id),
-    --system_logo INTEGER REFERENCES artwork(id)
+    alternate_name TEXT,
+    abbreviation TEXT
 );
 
 CREATE TABLE system_category (
@@ -46,8 +34,6 @@ CREATE TABLE system_family (
     company INTEGER REFERENCES company(id),
     name TEXT
 );
-
-
 
 -- PlayedOn (Game ↔ System)
 CREATE TABLE played_on (
@@ -98,6 +84,17 @@ CREATE TABLE reviews (
     star_rating INTEGER
 );
 
+CREATE TABLE screenshot (
+    id INTEGER PRIMARY KEY,
+    game_id INTEGER REFERENCES game(id),
+    profile_id INTEGER REFERENCES profile(id),
+    url TEXT,
+    width INTEGER,
+    height INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT
+);
+
 -- PopularityEnum
 CREATE TABLE popularity_enum (
     id INTEGER PRIMARY KEY,
@@ -106,16 +103,14 @@ CREATE TABLE popularity_enum (
 
 -- Popularity (Entity ↔ PopularityEnum)
 CREATE TABLE popularity (
-    entity_id TEXT REFERENCES entity(id),
     popularity_enum_id INTEGER REFERENCES popularity_enum(id),
     score FLOAT,
-    PRIMARY KEY (entity_id, popularity_enum_id)
+    PRIMARY KEY (popularity_enum_id)
 );
 
 -- Country (wraps Entity)
 CREATE TABLE country (
-    id INTEGER PRIMARY KEY,
-    entity_id TEXT REFERENCES entity(id)
+    id INTEGER PRIMARY KEY
 );
 
 -- ReleasedIn (Game ↔ Country)
@@ -155,10 +150,9 @@ CREATE TABLE artwork_enum (
 
 -- Artwork (Entity ↔ ArtworkEnum)
 CREATE TABLE artwork (
-    entity_id TEXT REFERENCES entity(id),
+    id INTEGER PRIMARY KEY,
     artwork_enum_id INTEGER REFERENCES artwork_enum(id),
-    image_url TEXT,
-    PRIMARY KEY (entity_id, artwork_enum_id)
+    image_url TEXT
 );
 
 -- TimeToPlay (Profile ↔ Game)
