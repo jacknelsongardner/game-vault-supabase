@@ -7,7 +7,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
-
+import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
 
 Deno.serve(async (req) => {
   try {
@@ -18,39 +18,75 @@ Deno.serve(async (req) => {
     )
 
     var token =  await getIGDBToken();
-    const response =  await sendIGDBRequest("fields *; limit 260; ", "platforms", token);
+
+    const MAX_WALL_TIME = 360000;
+    const MAX_CPU_TIME = 1000;
+
+    const startWallTime = Date.now();
 
 
-    for (var platform of response) {
+    var startCpuTime = 0;
+    var current_cpu_time = 0;
+
+    function cpuStart() {
+        startCpuTime = Date.now()
+    }
+
+    function cpuStop() {
+        var cpu_time = Date.now() - startCpuTime; 
+        current_cpu_time = current_cpu_time + cpu_time;
+        if (current_cpu_time > MAX_CPU_TIME) {
+          return true;
+        } else {return false; }
+    }
+
+    var [nextID, count] = await getLastUpdated("platform");
+
+    while (true) {
+
+
+        const response =  await sendIGDBRequest(`fields *; where id = ${nextID};`, "platforms", token);
+        
+        
+        cpuStart(); 
+
+        const platform = response[0]
       
+        var id = platform.id;
+        var entity_id = id;
+        //var description = platform.summary; 
+        var name = platform.name;
+        var json = platform;
 
-      var id = platform.id;
-      var entity_id = id;
-      var description = platform.summary; 
-      var name = platform.name;
+        console.log(`Processing system: ${name} with json: ${JSON.stringify(platform)}`);
+        
+        cpuStop();
 
-      
-      console.log(`Processing system: ${name} with json: ${JSON.stringify(platform)}`);
+        const { data: platformData, error: platformError } = await supabase
+            .from('platform')
+            .insert([
+              { id: nextID, data: platform }
+            ])
+            .select();
 
-      const { data: systemData, error: systemError } = await supabase
-          .from('system')
-          .upsert({ id, entity_id })
-          .select();
+        cpuStart();
 
-      if (entityError) {
-        console.log(`Error upserting entity: ${entityError.message}`);
-      }
+        if (platformError) {
+          console.log(`Error upserting system: ${platformError.message}`);
+        }
 
-      if (systemError) {
-        console.log(`Error upserting system: ${systemError.message}`);
-      }
+        console.log(`Upserted platform: ${name} with ID: ${id}`);
+        
+        if (nextID != count)
+        {
+          nextID += 1;
+        } 
+        else {nextID = 0}
 
-      if (systemError || entityError) {
-        break;
-      }
+        cpuStop(); 
 
-      var data = { entityData, systemData };
-      console.log(`Upserted platform: ${name} with ID: ${id}`);
+        insertLastUpdated("platform", nextID);
+
     }
 
     return new Response(JSON.stringify({ response }), {
