@@ -8,6 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
 import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
+import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
 
 Deno.serve(async (req) => {
   try {
@@ -17,36 +18,28 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
+    cpuStart();
+
     var token =  await getIGDBToken();
 
-    const MAX_WALL_TIME = 360000;
-    const MAX_CPU_TIME = 1000;
-
-    const startWallTime = Date.now();
-
-
-    var startCpuTime = 0;
-    var current_cpu_time = 0;
-
-    function cpuStart() {
-        startCpuTime = Date.now()
-    }
-
-    function cpuStop() {
-        var cpu_time = Date.now() - startCpuTime; 
-        current_cpu_time = current_cpu_time + cpu_time;
-        if (current_cpu_time > MAX_CPU_TIME) {
-          return true;
-        } else {return false; }
-    }
+    var done = []
 
     var [nextID, count] = await getLastUpdated("platform");
+    
+    function checkClock() {
+      if (cpuStop() || wallStop())
+      {
+        return true;
+      }
+    }
+    
+    cpuStop();
 
     while (true) {
-
+        
+        
 
         const response =  await sendIGDBRequest(`fields *; where id = ${nextID};`, "platforms", token);
-        
         
         cpuStart(); 
 
@@ -60,7 +53,7 @@ Deno.serve(async (req) => {
 
         console.log(`Processing system: ${name} with json: ${JSON.stringify(platform)}`);
         
-        cpuStop();
+        if (checkClock()) {break; }
 
         const { data: platformData, error: platformError } = await supabase
             .from('platform')
@@ -83,13 +76,13 @@ Deno.serve(async (req) => {
         } 
         else {nextID = 0}
 
-        cpuStop(); 
+        if (checkClock()) {break; }
 
         insertLastUpdated("platform", nextID);
 
     }
 
-    return new Response(JSON.stringify({ response }), {
+    return new Response(JSON.stringify({ "response" : done }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     })
