@@ -1,3 +1,48 @@
+
+DROP TABLE IF EXISTS platform_family CASCADE;
+DROP TABLE IF EXISTS profile CASCADE;
+DROP TABLE IF EXISTS platform CASCADE;
+DROP TABLE IF EXISTS platform_enum CASCADE;
+DROP TABLE IF EXISTS platform_logo CASCADE;
+DROP TABLE IF EXISTS game CASCADE;
+DROP TABLE IF EXISTS company CASCADE;
+DROP TABLE IF EXISTS platform_category CASCADE;
+DROP TABLE IF EXISTS played_on CASCADE;
+DROP TABLE IF EXISTS platform_owned CASCADE;
+DROP TABLE IF EXISTS game_owned CASCADE;
+DROP TABLE IF EXISTS badge CASCADE;
+DROP TABLE IF EXISTS badges_earned CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS screenshot CASCADE;
+DROP TABLE IF EXISTS popularity_enum CASCADE;
+DROP TABLE IF EXISTS popularity CASCADE;
+DROP TABLE IF EXISTS country CASCADE;
+DROP TABLE IF EXISTS released_in CASCADE;
+DROP TABLE IF EXISTS rating_system CASCADE;
+DROP TABLE IF EXISTS rating_enum CASCADE;
+DROP TABLE IF EXISTS age_rating CASCADE;
+DROP TABLE IF EXISTS artwork_enum CASCADE;
+DROP TABLE IF EXISTS artwork CASCADE;
+DROP TABLE IF EXISTS time_to_play CASCADE;
+DROP TABLE IF EXISTS franchise CASCADE;
+DROP TABLE IF EXISTS entry_in_franchise CASCADE;
+DROP TABLE IF EXISTS genre_enum CASCADE;
+DROP TABLE IF EXISTS genre CASCADE;
+DROP TABLE IF EXISTS developed CASCADE;
+DROP TABLE IF EXISTS published CASCADE;
+DROP TABLE IF EXISTS series CASCADE;
+DROP TABLE IF EXISTS entry_in_series CASCADE;
+DROP TABLE IF EXISTS edition CASCADE;
+DROP TABLE IF EXISTS bundled_in CASCADE;
+DROP TABLE IF EXISTS dlc CASCADE;
+DROP TABLE IF EXISTS last_platform_imported CASCADE;
+DROP TABLE IF EXISTS last_platform_updated CASCADE;
+DROP TABLE IF EXISTS error_log CASCADE;
+
+
+
+
 -- Profile
 CREATE TABLE profile (
     id INTEGER PRIMARY KEY,
@@ -7,11 +52,12 @@ CREATE TABLE profile (
     avatar_url TEXT
 );
 
--- System
+-- platform
 CREATE TABLE platform (
     id INTEGER PRIMARY KEY,
-    alternate_name TEXT,
-    abbreviation TEXT
+    --alternate_name TEXT,
+    --abbreviation TEXT, 
+    data JSONB
 );
 
 CREATE TABLE platform_enum (
@@ -28,63 +74,58 @@ INSERT INTO platform_enum (id, name) VALUES
     (6, 'computer');
 
 CREATE TABLE platform_logo (
-    id INTEGER PRIMARY KEY,
-    alpha_channel BOOLEAN,
-    animated BOOLEAN,
-    height INTEGER,
-    image_id TEXT,
-    url TEXT,
-    width INTEGER,
-    checksum TEXT
-);
-
-
-
-CREATE TABLE platform_family (
-    id INTEGER PRIMARY KEY,
-    name TEXT,
-    slug TEXT,
-    checksum TEXT
+    id INTEGER PRIMARY KEY--,
+    -- alpha_channel BOOLEAN,
+    -- animated BOOLEAN,
+    -- height INTEGER,
+    -- image_id TEXT,
+    -- url TEXT,
+    -- width INTEGER,
+    -- checksum TEXT
 );
 
 -- Game
 CREATE TABLE game (
-    id INTEGER PRIMARY KEY
+    id INTEGER PRIMARY KEY,
+    data JSONB
 );
 
 -- Company
 CREATE TABLE company (
-    id INTEGER PRIMARY KEY
-);
-
-CREATE TABLE system_category (
     id INTEGER PRIMARY KEY,
-    name TEXT
+    data JSONB
 );
 
-CREATE TABLE system_family (
+CREATE TABLE platform_category (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+    data JSONB
+);
+
+
+CREATE TABLE platform_family (
     id INTEGER PRIMARY KEY,
     company INTEGER REFERENCES company(id),
     name TEXT
 );
 
--- PlayedOn (Game ↔ System)
+-- PlayedOn (Game ↔ platform)
 CREATE TABLE played_on (
-    platform_id INTEGER REFERENCES system(id),
+    platform_id INTEGER REFERENCES platform(id),
     game_id INTEGER REFERENCES game(id),
     PRIMARY KEY (platform_id, game_id)
 );
 
--- SystemOwned (Profile ↔ System)
-CREATE TABLE system_owned (
-    platform_id INTEGER REFERENCES system(id),
+-- platformOwned (Profile ↔ platform)
+CREATE TABLE platform_owned (
+    platform_id INTEGER REFERENCES platform(id),
     profile_id INTEGER REFERENCES profile(id),
     PRIMARY KEY (platform_id, profile_id)
 );
 
--- GameOwned (Profile ↔ Game on a System)
+-- GameOwned (Profile ↔ Game on a platform)
 CREATE TABLE game_owned (
-    platform_id INTEGER REFERENCES system(id),
+    platform_id INTEGER REFERENCES platform(id),
     profile_id INTEGER REFERENCES profile(id),
     game_id INTEGER REFERENCES game(id),
     PRIMARY KEY (platform_id, profile_id, game_id)
@@ -105,12 +146,20 @@ CREATE TABLE badges_earned (
     PRIMARY KEY (profile_id, badge_id)
 );
 
+
+CREATE TABLE posts (
+    id INTEGER PRIMARY KEY,
+    data JSONB
+);
+
 -- Reviews
 CREATE TABLE reviews (
     id INTEGER PRIMARY KEY,
+
     platform_id INTEGER REFERENCES platform(id),
     game_id INTEGER REFERENCES game(id),
     profile_id INTEGER REFERENCES profile(id),
+    
     revision INTEGER,
     title TEXT,
     content TEXT,
@@ -154,7 +203,7 @@ CREATE TABLE released_in (
     PRIMARY KEY (game_id, country_id)
 );
 
--- RatingSystem
+-- Ratingsystem
 CREATE TABLE rating_system (
     id INTEGER PRIMARY KEY,
     name TEXT
@@ -163,7 +212,7 @@ CREATE TABLE rating_system (
 -- RatingEnum (e.g. ESRB M, PEGI 18)
 CREATE TABLE rating_enum (
     id INTEGER PRIMARY KEY,
-    system_id INTEGER REFERENCES rating_system(id),
+    platform_id INTEGER REFERENCES rating_system(id),
     name TEXT,
     age INTEGER
 );
@@ -276,14 +325,12 @@ CREATE TABLE dlc (
 
 -- Memory for importing game info from IGDB
 
-CREATE TABLE last_system_imported (
-    game_id INTEGER UNIQUE,
-    continue BOOLEAN DEFAULT TRUE
+CREATE TABLE last_imported (
+    data JSONB
 );
 
-CREATE TABLE last_system_updated (
-    game_id INTEGER UNIQUE REFERENCES game(id),
-    continue BOOLEAN DEFAULT TRUE
+CREATE TABLE last_updated (
+    data JSONB
 );
 
 CREATE TABLE error_log (
