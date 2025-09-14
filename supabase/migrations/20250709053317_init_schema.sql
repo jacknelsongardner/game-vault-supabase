@@ -7,6 +7,46 @@ CREATE TABLE profile (
     avatar_url TEXT
 );
 
+-- System
+CREATE TABLE platform (
+    id INTEGER PRIMARY KEY,
+    alternate_name TEXT,
+    abbreviation TEXT
+);
+
+CREATE TABLE platform_enum (
+    id INTEGER PRIMARY KEY,
+    name TEXT
+);
+
+INSERT INTO platform_enum (id, name) VALUES
+    (1, 'console'),
+    (2, 'arcade'),
+    (3, 'platform'),
+    (4, 'operating_system'),
+    (5, 'portable_console'),
+    (6, 'computer');
+
+CREATE TABLE platform_logo (
+    id INTEGER PRIMARY KEY,
+    alpha_channel BOOLEAN,
+    animated BOOLEAN,
+    height INTEGER,
+    image_id TEXT,
+    url TEXT,
+    width INTEGER,
+    checksum TEXT
+);
+
+
+
+CREATE TABLE platform_family (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+    slug TEXT,
+    checksum TEXT
+);
+
 -- Game
 CREATE TABLE game (
     id INTEGER PRIMARY KEY
@@ -15,13 +55,6 @@ CREATE TABLE game (
 -- Company
 CREATE TABLE company (
     id INTEGER PRIMARY KEY
-);
-
--- System
-CREATE TABLE system (
-    id INTEGER PRIMARY KEY,
-    alternate_name TEXT,
-    abbreviation TEXT
 );
 
 CREATE TABLE system_category (
@@ -37,24 +70,24 @@ CREATE TABLE system_family (
 
 -- PlayedOn (Game ↔ System)
 CREATE TABLE played_on (
-    system_id INTEGER REFERENCES system(id),
+    platform_id INTEGER REFERENCES system(id),
     game_id INTEGER REFERENCES game(id),
-    PRIMARY KEY (system_id, game_id)
+    PRIMARY KEY (platform_id, game_id)
 );
 
 -- SystemOwned (Profile ↔ System)
 CREATE TABLE system_owned (
-    system_id INTEGER REFERENCES system(id),
+    platform_id INTEGER REFERENCES system(id),
     profile_id INTEGER REFERENCES profile(id),
-    PRIMARY KEY (system_id, profile_id)
+    PRIMARY KEY (platform_id, profile_id)
 );
 
 -- GameOwned (Profile ↔ Game on a System)
 CREATE TABLE game_owned (
-    system_id INTEGER REFERENCES system(id),
+    platform_id INTEGER REFERENCES system(id),
     profile_id INTEGER REFERENCES profile(id),
     game_id INTEGER REFERENCES game(id),
-    PRIMARY KEY (system_id, profile_id, game_id)
+    PRIMARY KEY (platform_id, profile_id, game_id)
 );
 
 -- Badge
@@ -75,7 +108,7 @@ CREATE TABLE badges_earned (
 -- Reviews
 CREATE TABLE reviews (
     id INTEGER PRIMARY KEY,
-    system_id INTEGER REFERENCES system(id),
+    platform_id INTEGER REFERENCES platform(id),
     game_id INTEGER REFERENCES game(id),
     profile_id INTEGER REFERENCES profile(id),
     revision INTEGER,
@@ -88,6 +121,7 @@ CREATE TABLE screenshot (
     id INTEGER PRIMARY KEY,
     game_id INTEGER REFERENCES game(id),
     profile_id INTEGER REFERENCES profile(id),
+
     url TEXT,
     width INTEGER,
     height INTEGER,
