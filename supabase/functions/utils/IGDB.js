@@ -40,3 +40,5 @@ export async function sendIGDBRequest(request, endpoint, token) {
   
   return jsonResponse;
 }
+
+export {sendIGDBRequest, getIGDBToken}
