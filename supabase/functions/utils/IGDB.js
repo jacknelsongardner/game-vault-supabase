@@ -1,5 +1,5 @@
 
-export async function getIGDBToken() {
+async function getIGDBToken() {
   
     const auth_response = await fetch("https://id.twitch.tv/oauth2/token?client_id=eo11l1fe0ka6cbupy2foe8yjqloqv8&client_secret=x9pgfvyp8bo5xw0qh56t02l2pjoena&grant_type=client_credentials", {
       method: "POST",
@@ -19,26 +19,28 @@ export async function getIGDBToken() {
     return token;
 }
 
-export async function sendIGDBRequest(request, endpoint, token) {
-  
+async function sendIGDBRequest(request, endpoint, token) {
   const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       "Client-ID": "eo11l1fe0ka6cbupy2foe8yjqloqv8",
-      "Authorization": `Bearer ${token}`
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+      "Content-Type": "text/plain"
     },
     body: request
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errText = await response.text();
+    throw new Error(`HTTP error! status: ${response.status}, body: ${errText}`);
   }
 
-  let jsonResponse = await response.json();
+  const jsonResponse = await response.json();
   console.log("Response from IGDB:", jsonResponse);
-  
+
   return jsonResponse;
 }
+
 
 export {sendIGDBRequest, getIGDBToken}

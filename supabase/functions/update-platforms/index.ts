@@ -11,21 +11,26 @@ import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
 import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
 
 Deno.serve(async (req) => {
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    )
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+  )
 
+  try {
+    
     cpuStart();
 
     var token =  await getIGDBToken();
 
     var done = []
 
-    var [nextID, count] = await getLastUpdated("platform");
-    
+    var updated = await getLastUpdated("platform", supabase);
+    var nextID = updated["lastid"]
+    var count = updated["count"]
+
+    console.log("nextID: ", nextID);
+
     function checkClock() {
       if (cpuStop() || wallStop())
       {
@@ -43,29 +48,33 @@ Deno.serve(async (req) => {
         
         cpuStart(); 
 
-        const platform = response[0]
-      
-        var id = platform.id;
-        var entity_id = id;
-        //var description = platform.summary; 
-        var name = platform.name;
-        var json = platform;
+        if (response.length > 0) {
 
-        console.log(`Processing system: ${name} with json: ${JSON.stringify(platform)}`);
+          const platform = response[0]
         
-        if (checkClock()) {break; }
+          var id = platform.id;
+          var entity_id = id;
+          //var description = platform.summary; 
+          var name = platform.name;
+          var json = platform;
 
-        const { data: platformData, error: platformError } = await supabase
-            .from('platform')
-            .insert([
-              { id: nextID, data: platform }
-            ])
-            .select();
+          console.log(`Processing system: ${name} with json: ${JSON.stringify(platform)}`);
+          done.push(platform);
 
-        cpuStart();
+          if (checkClock()) {break; }
 
-        if (platformError) {
-          console.log(`Error upserting system: ${platformError.message}`);
+          const { data: platformData, error: platformError } = await supabase
+              .from('platform')
+              .insert([
+                { id: nextID, data: platform }
+              ])
+              .select();
+
+          cpuStart();
+
+          if (platformError) {
+            console.log(`Error upserting system: ${platformError.message}`);
+          }
         }
 
         console.log(`Upserted platform: ${name} with ID: ${id}`);
@@ -78,8 +87,7 @@ Deno.serve(async (req) => {
 
         if (checkClock()) {break; }
 
-        insertLastUpdated("platform", nextID);
-
+        insertLastUpdated("platform", nextID, supabase);
     }
 
     return new Response(JSON.stringify({ "response" : done }), {
@@ -87,9 +95,13 @@ Deno.serve(async (req) => {
       status: 200,
     })
   } catch (err) {
-    return new Response(JSON.stringify({ message: err?.message ?? err }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500 
-    })
+    console.error("Unexpected error:", err);
+    return new Response(
+      JSON.stringify({ message: String(err), error: err }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      },
+    );
   }
 })
