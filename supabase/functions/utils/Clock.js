@@ -14,7 +14,7 @@ function wallStart() {
 
 function wallStop() {
     if ((Date.now() - startWallTime) > MAX_CPU_TIME) {
-      return true;
+      return false;
     } else {return false; }
 }
 
@@ -26,7 +26,7 @@ function cpuStop() {
     var time_elapsed = Date.now() - startCpuTime; 
     current_cpu_time = current_cpu_time + time_elapsed;
     if (current_cpu_time > MAX_CPU_TIME) {
-      return true;
+      return false;
     } else {return false; }
 }
 

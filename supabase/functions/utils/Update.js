@@ -1,50 +1,39 @@
 async function getLastUpdated(table, supabase) {
   // Fetch the single row
-  const { data, error } = await supabase
+  var { data, error } = await supabase
     .from('last_imported')
-    .select('data')
-    .limit(1);
+    .select('next, count')
+    .eq('kind', table)
+    .single();
 
-  if (error) {
+  if (!data) { 
     console.error("Supabase error:", error);
-    return { lastid: 0, count: 0 };
-  }
-
-  let importedJSON = data?.[0]?.data || {};
-
-  // Ensure entry for this table exists
-  if (!importedJSON.hasOwnProperty(table)) {
-    importedJSON[table] = { lastid: 0, count: 5000 };
-    console.log("UPDATE INFO: ", importedJSON)
-    const { error: updateError } = await supabase
+    
+    // Insert a new row for the table
+    var {data, error} = await supabase
       .from('last_imported')
-      .update({ data: importedJSON })
+      .insert({ kind: table, next: 0, count: 5000 });
 
-    if (updateError) console.error("Supabase update error:", updateError);
+
+    return { lastid: 0, count : 0};
   }
   
-  return { lastid: importedJSON[table].lastid, count: importedJSON[table].count };
+  
+  console.log("data->", data);
+
+  return { lastid: data.next, count: data.count };
 }
 
-
 async function insertLastUpdated(table, id, supabase) {
-  // Fetch the row(s) from Supabase
-  const { data, error } = await supabase
+  // Upsert the next ID for this table
+  console.log("inserting last updated")
+  var {error} = await supabase
     .from('last_imported')
-    .select('json')
-    .limit(1)
+    .upsert({ kind: table, next: id }, { onConflict: ['kind'] }); // update if exists
 
-  if (error) {
-    console.error("Supabase error:", error);
-    return 0;
-  }
 
-  const importedJSON = data?.[0]?.json || {};
+  if (error) console.error("Supabase upsert error:", error);
+}
 
-  // Ensure platform.type exists and is a number
-  if (!importedJSON.hasOwnProperty(table) || typeof importedJSON.platform.type !== "number") {
-    importedJSON[table]["lastid"] = id;
-  }
-};
 
 export {insertLastUpdated, getLastUpdated}

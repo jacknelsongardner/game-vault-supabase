@@ -42,15 +42,13 @@ Deno.serve(async (req) => {
 
     while (true) {
         
-        
-
         const response =  await sendIGDBRequest(`fields *; where id = ${nextID};`, "platforms", token);
         
         cpuStart(); 
 
+        const platform = response[0]
         if (response.length > 0) {
 
-          const platform = response[0]
         
           var id = platform.id;
           var entity_id = id;
@@ -62,13 +60,17 @@ Deno.serve(async (req) => {
           done.push(platform);
 
           if (checkClock()) {break; }
+          
+          cpuStop();
 
           const { data: platformData, error: platformError } = await supabase
               .from('platform')
-              .insert([
+              .upsert([
                 { id: nextID, data: platform }
               ])
               .select();
+
+          insertLastUpdated("platform", nextID, supabase);
 
           cpuStart();
 
@@ -82,12 +84,12 @@ Deno.serve(async (req) => {
         if (nextID != count)
         {
           nextID += 1;
+          console.log(`next up: ${nextID}`);
         } 
-        else {nextID = 0}
+        else {nextID = 0; break; }
 
         if (checkClock()) {break; }
-
-        insertLastUpdated("platform", nextID, supabase);
+        cpuStop();
     }
 
     return new Response(JSON.stringify({ "response" : done }), {

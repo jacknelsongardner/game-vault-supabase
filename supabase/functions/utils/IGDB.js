@@ -1,3 +1,6 @@
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function getIGDBToken() {
   
@@ -20,6 +23,8 @@ async function getIGDBToken() {
 }
 
 async function sendIGDBRequest(request, endpoint, token) {
+  await sleep(250);
+  
   const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
     method: "POST",
     headers: {

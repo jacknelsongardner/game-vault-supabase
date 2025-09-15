@@ -326,7 +326,9 @@ CREATE TABLE dlc (
 -- Memory for importing game info from IGDB
 
 CREATE TABLE last_imported (
-    data JSONB NOT NULL DEFAULT '{}'
+    kind TEXT PRIMARY KEY,
+    next INTEGER,
+    count INTEGER
 );
 
 CREATE TABLE last_updated (
