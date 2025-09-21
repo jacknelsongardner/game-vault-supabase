@@ -12,7 +12,7 @@ async function getLastUpdated(table, supabase) {
     // Insert a new row for the table
     var {data, error} = await supabase
       .from('last_imported')
-      .insert({ kind: table, next: 0, count: 5000 });
+      .insert({ kind: table, next: 0, count: 1000 });
 
 
     return { lastid: 0, count : 0};
@@ -25,6 +25,7 @@ async function getLastUpdated(table, supabase) {
 }
 
 async function insertLastUpdated(table, id, supabase) {
+  
   // Upsert the next ID for this table
   console.log("inserting last updated")
   var {error} = await supabase
@@ -34,6 +35,5 @@ async function insertLastUpdated(table, id, supabase) {
 
   if (error) console.error("Supabase upsert error:", error);
 }
-
 
 export {insertLastUpdated, getLastUpdated}
