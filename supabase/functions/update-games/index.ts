@@ -5,28 +5,124 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
-console.log("Hello from Functions!")
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
+import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
+import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
 
 Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
-  }
-
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
   )
+
+  try {
+    
+    cpuStart();
+
+    var token =  await getIGDBToken();
+
+    var done = []
+
+    var updated = await getLastUpdated("game", supabase);
+    var nextID = updated["lastid"]
+    var count = updated["count"]
+
+    console.log("nextID: ", nextID);
+
+    function checkClock() {
+      if (cpuStop() || wallStop())
+      {
+        return true;
+      }
+    }
+    
+    cpuStop();
+
+    while (true) {
+        
+        const response =  await sendIGDBRequest(`fields *; where id = ${nextID};`, "games", token);
+        
+        cpuStart(); 
+
+        const game = response[0]
+
+        if (response.length > 0) {
+
+        
+          var id = game.id;
+
+          var name = game.name;
+          var json = game;
+
+          var platforms = game["platforms"]
+
+          console.log(`Processing game: ${name} with json: ${JSON.stringify(game)}`);
+          done.push(game);
+
+          if (checkClock()) {break; }
+          
+          cpuStop();
+
+          const { data: gameData, error: gameError } = await supabase
+              .from('game')
+              .upsert([
+                { id: nextID, data: game }
+              ])
+              .select();
+          
+          if (platforms)
+          {
+            for (var plat_id of platforms)
+            {
+
+              const { data: playedData, error: playedError } = await supabase
+                  .from('played_on')
+                  .upsert([
+                    { game_id: id, platform_id: plat_id }
+                  ])
+                  .select();
+              
+            }
+          }
+
+          insertLastUpdated("game", nextID, supabase);
+          
+          
+
+          cpuStart();
+
+          if (gameError) {
+            console.log(`Error upserting system: ${gameError.message}`);
+          }
+        }
+
+        console.log(`Upserted game: ${name} with ID: ${id} to platforms: ${platforms}`);
+        
+        if (nextID != count)
+        {
+          nextID += 1;
+          console.log(`next up: ${nextID}`);
+        } 
+        else {nextID = 0; break; }
+
+        if (checkClock()) {break; }
+        cpuStop();
+    }
+
+    return new Response(JSON.stringify({ "response" : done }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    })
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return new Response(
+      JSON.stringify({ message: String(err), error: err }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      },
+    );
+  }
 })
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/update-games' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
