@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     while (true) {
         
         const response =  await sendIGDBRequest(`fields *; where id = ${nextID};`, "platforms", token);
-        
+
         cpuStart(); 
 
         const platform = response[0]
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
           const { data: platformData, error: platformError } = await supabase
               .from('platform')
               .upsert([
-                { id: nextID, data: platform }
+                { id: nextID, data: platform, search_name: `${platform?.name} ${platform?.slug}` }
               ])
               .select();
 

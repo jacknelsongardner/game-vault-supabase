@@ -45,8 +45,7 @@ DROP TABLE IF EXISTS error_log CASCADE;
 
 -- Profile
 CREATE TABLE profile (
-    id INTEGER PRIMARY KEY,
-    auth_user_id UUID REFERENCES auth.users(id),
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
     birthday TIMESTAMP,
     avatar_url TEXT
