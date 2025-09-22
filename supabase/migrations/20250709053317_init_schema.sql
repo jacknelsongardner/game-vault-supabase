@@ -1,59 +1,17 @@
 
-DROP TABLE IF EXISTS platform_family CASCADE;
-DROP TABLE IF EXISTS profile CASCADE;
-DROP TABLE IF EXISTS platform CASCADE;
-DROP TABLE IF EXISTS platform_enum CASCADE;
-DROP TABLE IF EXISTS platform_logo CASCADE;
-DROP TABLE IF EXISTS game CASCADE;
-DROP TABLE IF EXISTS company CASCADE;
-DROP TABLE IF EXISTS platform_category CASCADE;
-DROP TABLE IF EXISTS played_on CASCADE;
-DROP TABLE IF EXISTS platform_owned CASCADE;
-DROP TABLE IF EXISTS game_owned CASCADE;
-DROP TABLE IF EXISTS badge CASCADE;
-DROP TABLE IF EXISTS badges_earned CASCADE;
-DROP TABLE IF EXISTS posts CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
-DROP TABLE IF EXISTS screenshot CASCADE;
-DROP TABLE IF EXISTS popularity_enum CASCADE;
-DROP TABLE IF EXISTS popularity CASCADE;
-DROP TABLE IF EXISTS country CASCADE;
-DROP TABLE IF EXISTS released_in CASCADE;
-DROP TABLE IF EXISTS rating_system CASCADE;
-DROP TABLE IF EXISTS rating_enum CASCADE;
-DROP TABLE IF EXISTS age_rating CASCADE;
-DROP TABLE IF EXISTS artwork_enum CASCADE;
-DROP TABLE IF EXISTS artwork CASCADE;
-DROP TABLE IF EXISTS time_to_play CASCADE;
-DROP TABLE IF EXISTS franchise CASCADE;
-DROP TABLE IF EXISTS entry_in_franchise CASCADE;
-DROP TABLE IF EXISTS genre_enum CASCADE;
-DROP TABLE IF EXISTS genre CASCADE;
-DROP TABLE IF EXISTS developed CASCADE;
-DROP TABLE IF EXISTS published CASCADE;
-DROP TABLE IF EXISTS series CASCADE;
-DROP TABLE IF EXISTS entry_in_series CASCADE;
-DROP TABLE IF EXISTS edition CASCADE;
-DROP TABLE IF EXISTS bundled_in CASCADE;
-DROP TABLE IF EXISTS dlc CASCADE;
-DROP TABLE IF EXISTS last_platform_imported CASCADE;
-DROP TABLE IF EXISTS last_platform_updated CASCADE;
-DROP TABLE IF EXISTS error_log CASCADE;
-
-
-
-
 -- Profile
 CREATE TABLE profile (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
     birthday TIMESTAMP,
-    avatar_url TEXT
+    avatar_url TEXT,
+    bio TEXT
 );
 
 -- platform
 CREATE TABLE platform (
     id INTEGER PRIMARY KEY,
+    search_name TEXT,
     --alternate_name TEXT,
     --abbreviation TEXT, 
     data JSONB
@@ -86,6 +44,7 @@ CREATE TABLE platform_logo (
 -- Game
 CREATE TABLE game (
     id INTEGER PRIMARY KEY,
+    search_name TEXT,
     data JSONB
 );
 
@@ -118,14 +77,14 @@ CREATE TABLE played_on (
 -- platformOwned (Profile ↔ platform)
 CREATE TABLE platform_owned (
     platform_id INTEGER REFERENCES platform(id),
-    profile_id INTEGER REFERENCES profile(id),
+    profile_id UUID REFERENCES profile(id),
     PRIMARY KEY (platform_id, profile_id)
 );
 
 -- GameOwned (Profile ↔ Game on a platform)
 CREATE TABLE game_owned (
     platform_id INTEGER REFERENCES platform(id),
-    profile_id INTEGER REFERENCES profile(id),
+    profile_id UUID REFERENCES profile(id),
     game_id INTEGER REFERENCES game(id),
     PRIMARY KEY (platform_id, profile_id, game_id)
 );
@@ -140,7 +99,7 @@ CREATE TABLE badge (
 
 -- BadgesEarned
 CREATE TABLE badges_earned (
-    profile_id INTEGER REFERENCES profile(id),
+    profile_id UUID REFERENCES profile(id),
     badge_id INTEGER REFERENCES badge(id),
     PRIMARY KEY (profile_id, badge_id)
 );
@@ -157,7 +116,7 @@ CREATE TABLE reviews (
 
     platform_id INTEGER REFERENCES platform(id),
     game_id INTEGER REFERENCES game(id),
-    profile_id INTEGER REFERENCES profile(id),
+    profile_id UUID REFERENCES profile(id),
     
     revision INTEGER,
     title TEXT,
@@ -168,7 +127,7 @@ CREATE TABLE reviews (
 CREATE TABLE screenshot (
     id INTEGER PRIMARY KEY,
     game_id INTEGER REFERENCES game(id),
-    profile_id INTEGER REFERENCES profile(id),
+    profile_id UUID REFERENCES profile(id),
 
     url TEXT,
     width INTEGER,
@@ -211,7 +170,7 @@ CREATE TABLE rating_system (
 -- RatingEnum (e.g. ESRB M, PEGI 18)
 CREATE TABLE rating_enum (
     id INTEGER PRIMARY KEY,
-    platform_id INTEGER REFERENCES rating_system(id),
+    rating_system_id INTEGER REFERENCES rating_system(id),
     name TEXT,
     age INTEGER
 );
@@ -239,7 +198,7 @@ CREATE TABLE artwork (
 
 -- TimeToPlay (Profile ↔ Game)
 CREATE TABLE time_to_play (
-    profile_id INTEGER REFERENCES profile(id),
+    profile_id UUID REFERENCES profile(id),
     game_id INTEGER REFERENCES game(id),
     hours INTEGER,
     minutes INTEGER,
