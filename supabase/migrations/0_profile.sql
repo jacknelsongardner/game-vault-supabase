@@ -1,0 +1,29 @@
+
+-- Profile
+CREATE TABLE profile (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT,
+    birthday TIMESTAMP,
+    avatar_url TEXT,
+    bio TEXT
+);
+
+CREATE TABLE friend (
+    id UUID KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+);
+
+-- Badge
+CREATE TABLE badge (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+    icon_url TEXT,
+    description TEXT
+);
+
+-- BadgesEarned
+CREATE TABLE badges_earned (
+    profile_id UUID REFERENCES profile(id),
+    badge_id INTEGER REFERENCES badge(id),
+    PRIMARY KEY (profile_id, badge_id)
+);
