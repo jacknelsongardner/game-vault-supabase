@@ -4,13 +4,15 @@ CREATE TABLE profile (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
     birthday TIMESTAMP,
+    search_name TEXT,
     avatar_url TEXT,
     bio TEXT
 );
 
 CREATE TABLE friend (
-    id UUID KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    id UUID KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    friend UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    friended UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    PRIMARY KEY (friend, friended)
 );
 
 -- Badge

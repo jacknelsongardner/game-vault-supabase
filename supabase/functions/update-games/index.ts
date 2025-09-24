@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
           const { data: gameData, error: gameError } = await supabase
               .from('game')
               .upsert([
-                { id: nextID, data: game }
+                { id: nextID, data: game, search_name: `${game?.name} ${game?.slug}` }
               ])
               .select();
           
@@ -89,8 +89,6 @@ Deno.serve(async (req) => {
 
           insertLastUpdated("game", nextID, supabase);
           
-          
-
           cpuStart();
 
           if (gameError) {

@@ -2,7 +2,6 @@ CREATE TABLE search_index (
   id SERIAL PRIMARY KEY,
   entity_type TEXT, -- 'game', 'character', 'platform', 'company'
   entity_id INT,
-  content TEXT,
   search_vector tsvector
 );
 
