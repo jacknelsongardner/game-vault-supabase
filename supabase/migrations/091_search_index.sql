@@ -16,7 +16,7 @@ begin
     and entity_id = new.id;
 
   -- Insert new entry
-  insert into search_index (entity_type, entity_id, content, search_vector)
+  insert into search_index (entity_type, entity_id, search_vector)
   values (
     tg_table_name,           -- use table name as entity_type
     new.id,
