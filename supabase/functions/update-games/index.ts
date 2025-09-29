@@ -9,7 +9,60 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
 import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
 import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
+import { ImportData } from "../utils/Import.js";
 
+Deno.serve(async (req) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+  )
+
+  try {
+ 
+    const getData = async (supabase, game) => {
+        
+      var game_id = game.id;
+      var game_json = JSON.stringify(game);
+      var game_search = `${game?.name} ${game?.slug}`
+  
+      const { data, error } = await supabase
+          .from('game')
+          .upsert([
+            { id: game_id, search_name: game_search, data: game_json }
+          ])
+          .select();
+      
+      return {data, error}
+    };
+ 
+    var log, errors = await ImportData("games", "game", getData, supabase);
+
+    return new Response(JSON.stringify({  "success" : true, 
+                                          "log" : log, 
+                                          "errors" : errors }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    })
+  } catch (err) 
+  {
+    console.error("Unexpected error:", err);
+
+    return new Response(
+      JSON.stringify({ message: String(err), error: err }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+        "success" : true, 
+        "log" : log, 
+        "errors" : errors 
+      },
+    );
+  }
+});
+
+
+/*
 Deno.serve(async (req) => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -123,4 +176,4 @@ Deno.serve(async (req) => {
       },
     );
   }
-})
+})*/

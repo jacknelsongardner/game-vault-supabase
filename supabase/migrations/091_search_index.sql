@@ -20,7 +20,6 @@ begin
   values (
     tg_table_name,           -- use table name as entity_type
     new.id,
-    new.search_name,                -- assumes searchable field is "name"
     to_tsvector('english', coalesce(new.search_name, ''))
   );
 

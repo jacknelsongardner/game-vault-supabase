@@ -41,19 +41,6 @@ CREATE TABLE age_rating (
     PRIMARY KEY (game_id, rating_system_id)
 );
 
--- ArtworkEnum
-CREATE TABLE artwork_enum (
-    id INTEGER PRIMARY KEY,
-    type TEXT
-);
-
--- Artwork (Entity ↔ ArtworkEnum)
-CREATE TABLE artwork (
-    id INTEGER PRIMARY KEY,
-    artwork_enum_id INTEGER REFERENCES artwork_enum(id),
-    image_url TEXT
-);
-
 -- TimeToPlay (Profile ↔ Game)
 CREATE TABLE time_to_play (
     profile_id UUID REFERENCES profile(id),
