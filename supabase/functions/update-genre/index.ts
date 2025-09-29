@@ -5,19 +5,62 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
-console.log("Hello from Functions!")
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
+import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
+import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
+import { ImportData } from "../utils/Import.js";
 
 Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
-  }
-
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
   )
-})
+
+  try {
+ 
+    const getData = async (supabase, genre) => {
+        
+      var id = genre.id;
+      var json = JSON.stringify(genre);
+      var name = genre.name;
+      var slug = genre.slug;
+  
+      const { data, error } = await supabase
+          .from('genre_enum')
+          .upsert([
+            { id: id, name: name, slug: slug, data: json }
+          ])
+          .select();
+      
+      return {data, error}
+    };
+ 
+    var log, errors = await ImportData("genres", "genre_enum", getData, supabase);
+
+    return new Response(JSON.stringify({  "success" : true, 
+                                          "log" : log, 
+                                          "errors" : errors }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    })
+  } catch (err) 
+  {
+    console.error("Unexpected error:", err);
+
+    return new Response(
+      JSON.stringify({ message: String(err), error: err }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+        "success" : true, 
+        "log" : log, 
+        "errors" : errors 
+      },
+    );
+  }
+});
 
 /* To invoke locally:
 

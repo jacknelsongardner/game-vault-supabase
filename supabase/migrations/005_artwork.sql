@@ -7,14 +7,12 @@ CREATE TABLE artwork_enum (
 
 CREATE TABLE artwork (
     id SERIAL PRIMARY KEY,
-    search_name TEXT,
     url TEXT,
     data JSONB
 );
 
 CREATE TABLE cover (
     id SERIAL PRIMARY KEY,
-    search_name TEXT,
     url TEXT,
     data JSONB
 );

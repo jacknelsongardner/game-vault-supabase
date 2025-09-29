@@ -6,7 +6,6 @@ CREATE TABLE game (
     data JSONB
 );
 
-
 -- Country (wraps Entity)
 CREATE TABLE country (
     id INTEGER PRIMARY KEY
@@ -67,7 +66,9 @@ CREATE TABLE entry_in_franchise (
 -- GenreEnum
 CREATE TABLE genre_enum (
     id INTEGER PRIMARY KEY,
-    name TEXT
+    name TEXT,
+    slug TEXT,
+    data JSONB
 );
 
 -- Genre (Game ↔ GenreEnum)

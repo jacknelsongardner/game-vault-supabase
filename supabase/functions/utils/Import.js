@@ -21,7 +21,7 @@ async function ImportData(query, table, dataFunction, supabase)
     var importID = updated["lastid"]
     var count = updated["count"]
 
-    console.log("next Platform ID to import: ", importID);
+    console.log("next", table, " ID to import: ", importID);
     console.log("count: ", count);
 
     while (true) {
