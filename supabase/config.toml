@@ -1,36 +1,26 @@
 
-[functions.hello-world]
-enabled = true
-verify_jwt = true
-import_map = "./functions/hello-world/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/hello-world/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/hello-world/*.html" ]
 
-[functions.update-platforms]
+[functions.import-platforms]
 enabled = true
 verify_jwt = true
-import_map = "./functions/update-platforms/deno.json"
+import_map = "./functions/import-platforms/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/update-platforms/index.ts"
+entrypoint = "./functions/import-platforms/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/update-platforms/*.html" ]
+# static_files = [ "./functions/import-platforms/*.html" ]
 
-[functions.update-games]
+[functions.import-games]
 enabled = true
 verify_jwt = true
-import_map = "./functions/update-games/deno.json"
+import_map = "./functions/import-games/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/update-games/index.ts"
+entrypoint = "./functions/import-games/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/update-games/*.html" ]
+# static_files = [ "./functions/import-games/*.html" ]
 
 [functions.update-characters]
 enabled = true
@@ -42,6 +32,7 @@ entrypoint = "./functions/update-characters/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/update-characters/*.html" ]
+
 [functions.update-genre]
 enabled = true
 verify_jwt = true

@@ -4,7 +4,6 @@ CREATE TABLE artwork_enum (
     type TEXT
 );
 
-
 CREATE TABLE artwork (
     id SERIAL PRIMARY KEY,
     url TEXT,
@@ -12,6 +11,12 @@ CREATE TABLE artwork (
 );
 
 CREATE TABLE cover (
+    id SERIAL PRIMARY KEY,
+    url TEXT,
+    data JSONB
+);
+
+CREATE TABLE screenshot (
     id SERIAL PRIMARY KEY,
     url TEXT,
     data JSONB

@@ -21,8 +21,6 @@ CREATE TABLE game_owned (
     PRIMARY KEY (platform_id, profile_id, game_id)
 );
 
-
-
 -- Reviews
 CREATE TABLE reviews (
     id INTEGER PRIMARY KEY,
@@ -35,16 +33,4 @@ CREATE TABLE reviews (
     title TEXT,
     content TEXT,
     star_rating INTEGER
-);
-
-CREATE TABLE screenshot (
-    id INTEGER PRIMARY KEY,
-    game_id INTEGER REFERENCES game(id),
-    profile_id UUID REFERENCES profile(id),
-
-    url TEXT,
-    width INTEGER,
-    height INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    description TEXT
 );
