@@ -10,8 +10,8 @@ CREATE TABLE profile (
 );
 
 CREATE TABLE friend (
-    friend UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    friended UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    friendOne UUID REFERENCES profile(id) ON DELETE CASCADE,
+    friendTwo UUID REFERENCES profile(id) ON DELETE CASCADE,
     PRIMARY KEY (friend, friended)
 );
 
