@@ -38,7 +38,6 @@ async function ImportData(query, table, dataFunction, supabase)
           errors.push(error);
 
           console.log("Data upserted ")
-          insertLastUpdated(table, importID++, supabase);
 
           if (error) {
             console.log(`Error upserting system: ${error.message}`);
@@ -49,6 +48,7 @@ async function ImportData(query, table, dataFunction, supabase)
         {
           importID+= 1;
           console.log(`next up: ${importID}`);
+          insertLastUpdated(table, importID, supabase);
         } 
         else {importID= 0; console.log("finished all"); break; }
 

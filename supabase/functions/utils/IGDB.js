@@ -25,6 +25,8 @@ async function getIGDBToken() {
 async function sendIGDBRequest(request, endpoint, token) {
   await sleep(250);
   
+  console.log("Request sent to IGDB:", request);
+  
   const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
     method: "POST",
     headers: {
@@ -41,7 +43,10 @@ async function sendIGDBRequest(request, endpoint, token) {
     throw new Error(`HTTP error! status: ${response.status}, body: ${errText}`);
   }
 
+
+
   const jsonResponse = await response.json();
+  
   console.log("Response from IGDB:", jsonResponse);
 
   return jsonResponse;

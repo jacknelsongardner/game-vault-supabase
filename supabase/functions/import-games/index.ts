@@ -63,21 +63,47 @@ Deno.serve(async (req) => {
     const getData = async (supabase, game) => {
         
       var game_id = game.id;
-      var game_json = game;
       var game_search = `${game?.name} ${game?.slug}`
   
       const { data, error } = await supabase
           .from('game')
           .upsert([
-            { id: game_id, search_name: game_search, data: game_json }
+            { id: game_id, 
+              search_name: game_search, 
+              data: game, 
+              name: game?.name 
+            }
           ])
           .select();
 
       await upsertImage(supabase, "cover", "covers", game.cover);
       await upsertImageList(supabase, "artwork", "artworks", game.artworks);
       await upsertImageList(supabase, "screenshot", "screenshots", game.screenshots);
+ 
+      for (var platformID of game.platforms)
+      {
+        var response = await sendIGDBRequest(`fields *; where id = ${id};`, "platforms", token);
+        platform = response[0];
 
-      return {data, error}
+        if (platform.id) 
+        {
+          var platform_search = `${platform?.name} ${platform?.slug}`
+      
+          const { data, error } = await supabase
+            .from('platform')
+            .insert([
+              {
+                id: response?.id, 
+                search_name: platform_search, 
+                data: platform, 
+                name: platform?.name
+              }
+            ])
+            .select();
+        }
+      }
+
+      return {data, error};
     };
  
     const {log, errors} = await ImportData("games", "game", getData, supabase);

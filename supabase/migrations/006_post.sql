@@ -2,6 +2,7 @@ CREATE TABLE post (
     id SERIAL PRIMARY KEY,
     search_name TEXT,
     profile_id UUID REFERENCES profile(id),
+    name TEXT,
     posttime TIMESTAMPTZ,
     data JSONB
 );
@@ -9,6 +10,7 @@ CREATE TABLE post (
 CREATE TABLE tag (
     tag TEXT, 
     type TEXT,
+    name TEXT,
     search_name TEXT,
     post_id INTEGER REFERENCEs post(id)
 );

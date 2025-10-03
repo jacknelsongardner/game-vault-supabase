@@ -2,6 +2,7 @@
 -- platform
 CREATE TABLE platform (
     id INTEGER PRIMARY KEY,
+    name TEXT,
     search_name TEXT,
     --alternate_name TEXT,
     --abbreviation TEXT, 

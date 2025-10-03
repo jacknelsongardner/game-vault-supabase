@@ -4,7 +4,6 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 
-
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -21,25 +20,31 @@ Deno.serve(async (req) => {
   )
 
   try {
- 
+    console.log("Starting platform import");
+
     const getData = async (supabase, platform) => {
         
       var platform_id = platform.id;
-      var platform_json = JSON.stringify(platform);
       var platform_search = `${platform?.name} ${platform?.slug}`
-  
-      const { data, error } = await supabase
-          .from('platform')
-          .upsert([
-            { id: platform_id, search_name: platform_search, data: platform_json }
-          ])
-          .select();
       
+      const { data, error } = await supabase
+        .from('platform')
+        .insert([
+          {
+            id: platform_id, 
+            search_name: platform_search, 
+            data: platform, 
+            name: platform?.name
+          }
+        ])
+        .select();
 
       return {data, error}
     };
  
     var log, errors = await ImportData("platforms", "platform", getData, supabase);
+
+    console.log("Import complete:", {log, errors});
 
     return new Response(JSON.stringify({  "success" : true, 
                                           "log" : log, 

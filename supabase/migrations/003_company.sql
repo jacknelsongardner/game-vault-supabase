@@ -2,6 +2,7 @@
 CREATE TABLE company (
     id INTEGER PRIMARY KEY,
     search_name TEXT,
+    name TEXT,
     data JSONB
 );
 

@@ -2,6 +2,7 @@
 -- Game
 CREATE TABLE game (
     id INTEGER PRIMARY KEY,
+    name TEXT,
     search_name TEXT,
     data JSONB
 );

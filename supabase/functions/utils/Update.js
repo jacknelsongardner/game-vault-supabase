@@ -5,7 +5,9 @@ async function getLastUpdated(table, supabase) {
     .select('next, count')
     .eq('kind', table);
 
-  if (error || !data || data.next == undefined || data.count == undefined) { 
+  console.log("import result->", {data, error});
+  
+  if (error ) { 
     console.error("Supabase error:", error);
     
     // Insert a new row for the table
@@ -17,10 +19,8 @@ async function getLastUpdated(table, supabase) {
     return { lastid: 0, count : 1000};
   }
   
-  
-  console.log("data->", data);
 
-  return { lastid: data.next, count: data.count };
+  return { lastid: data[0].next, count: data[0].count };
 }
 
 async function insertLastUpdated(table, id, supabase) {

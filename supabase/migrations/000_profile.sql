@@ -12,7 +12,7 @@ CREATE TABLE profile (
 CREATE TABLE friend (
     friendOne UUID REFERENCES profile(id) ON DELETE CASCADE,
     friendTwo UUID REFERENCES profile(id) ON DELETE CASCADE,
-    PRIMARY KEY (friend, friended)
+    PRIMARY KEY (friendOne, friendTwo)
 );
 
 -- Badge
