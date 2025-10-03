@@ -82,8 +82,10 @@ Deno.serve(async (req) => {
  
       for (var platformID of game.platforms)
       {
-        var response = await sendIGDBRequest(`fields *; where id = ${id};`, "platforms", token);
-        platform = response[0];
+        var response = await sendIGDBRequest(`fields *; where id = ${platformID};`, "platforms", token);
+        const platform = response[0];
+
+        console.log("platform->", platform);
 
         if (platform.id) 
         {
@@ -93,7 +95,7 @@ Deno.serve(async (req) => {
             .from('platform')
             .insert([
               {
-                id: response?.id, 
+                id: platformID, 
                 search_name: platform_search, 
                 data: platform, 
                 name: platform?.name
