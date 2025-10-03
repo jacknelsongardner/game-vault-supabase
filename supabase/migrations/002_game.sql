@@ -126,3 +126,35 @@ CREATE TABLE popularity (
     score FLOAT,
     PRIMARY KEY (popularity_enum_id)
 );
+
+CREATE TABLE game_tag (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+);
+
+CREATE TABLE tagged_game (
+    game_id INTEGER REFERENCES game(id),
+    tag_id INTEGER REFERENCES game_tag(id),
+    PRIMARY KEY (game_id, tag_id)
+);
+
+CREATE TABLE theme (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+);
+
+CREATE TABLE alt_name (
+    id INTEGER PRIMARY KEY,
+    name TEXT
+);
+
+CREATE TABLE collection (
+    id INTEGER PRIMARY KEY,
+    name TEXT
+);
+
+CREATE TABLE in_collection (
+    game_id INTEGER REFERENCES game(id),
+    collection_id INTEGER REFERENCES collection(id),
+    PRIMARY KEY (game_id, collection_id)
+);

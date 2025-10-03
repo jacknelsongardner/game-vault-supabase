@@ -21,3 +21,9 @@ CREATE TABLE screenshot (
     url TEXT,
     data JSONB
 );
+
+CREATE TABLE video (
+    id SERIAL PRIMARY KEY,
+    url TEXT,
+    data JSONB
+);
