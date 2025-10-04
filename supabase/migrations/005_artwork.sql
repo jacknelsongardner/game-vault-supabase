@@ -22,7 +22,7 @@ CREATE TABLE screenshot (
     data JSONB
 );
 
-CREATE TABLE video (
+CREATE TABLE game_video (
     id SERIAL PRIMARY KEY,
     url TEXT,
     data JSONB
