@@ -139,12 +139,14 @@ CREATE TABLE tagged_game (
 
 CREATE TABLE theme (
     id INTEGER PRIMARY KEY,
-    name TEXT
+    name TEXT,
+    data JSONB
 );
 
 CREATE TABLE alt_name (
     id INTEGER PRIMARY KEY,
-    name TEXT
+    name TEXT,
+    data JSONB
 );
 
 CREATE TABLE collection (

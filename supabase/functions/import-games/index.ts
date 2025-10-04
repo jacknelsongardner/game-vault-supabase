@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       var game_id = game.id;
       
       var alts = [];
-      
+
       if (game.alternative_names)
       {
         for (var alt of game.alternative_names)
@@ -99,130 +99,143 @@ Deno.serve(async (req) => {
       await upsertImageList(supabase, "game_video", "game_videos", game.videos);
       await upsertImageList(supabase, "website", "websites", game.videos);
 
-      for (var theme of game.themes)
+      if (game.themes)
       {
-
-        var response = await sendIGDBRequest(`fields *; where id = ${theme};`, "themes", token);
-        response = response[0];
-
-        if (response) 
+        for (var theme of game.themes)
         {
 
-            const { data, error } = await supabase
-              .from("theme")
-              .upsert([
-                { id: response.id, name: response.name, data: response }
-              ])
-              .select();  
-        
-            console.log(`Theme : `, response, data, error);
-            if (error != null) 
-            {
-              throw new Error(`ERROR UPSERTING ${response} into ${supaTable} ${String(error)} id=${id}`);
-            }
-        }
-      }
+          var response = await sendIGDBRequest(`fields *; where id = ${theme};`, "themes", token);
+          response = response[0];
 
+          if (response) 
+          {
 
-      for (var genre of game.genres)
-      {
-
-        var response = await sendIGDBRequest(`fields *; where id = ${genre};`, "genres", token);
-        response = response[0];
-
-        if (response) 
-        {
-
-            const { data, error } = await supabase
-              .from("genre")
-              .upsert([
-                { id: response.id, name: response.name, data: response }
-              ])
-              .select();  
-        
-            console.log(`Genre : `, response, data, error);
-            if (error != null) 
-            {
-              throw new Error(`ERROR UPSERTING ${response} into ${supaTable} ${String(error)} id=${id}`);
-            }
-        }
-      }
-
-      for (var company of game.involved_companies)
-      {
-
-        var response = await sendIGDBRequest(`fields *; where id = ${company};`, "involved_companies", token);
-        response = response[0];
-
-        if (response) 
-        {
-             
-            var search_name = `${response.name} ${response.slug}`;
-
-            const { data, error } = await supabase
-              .from("involved_company")
-              .upsert([
-                { id: response.id, search_name: response.name, data: response }
-              ])
-              .select();  
-        
-            console.log(`Involved Company : `, response, data, error);
-            if (error != null) 
-            {
-              throw new Error(`ERROR UPSERTING ${response} into ${supaTable} ${String(error)} id=${id}`);
-            }
-        }
-      }
-
-      for (var collectionID of game.collections)
-      {
-
-        var response = await sendIGDBRequest(`fields *; where id = ${collectionID};`, "collections", token);
-        response = response[0];     
-
-        if (response) 
-        {
-            
-            const { data, error } = await supabase
-              .from("collection")
-              .upsert([
-                { id: response.id, name: response.name, data: response }
-              ])
-              .select();  
-        
-            console.log(`Collection : `, response, data, error);
-            if (error != null) 
-            {
-              throw new Error(`ERROR UPSERTING ${response} into ${supaTable} ${String(error)} id=${id}`);
-            }
-        }
-      }
-
-      for (var platformID of game.platforms)
-      {
-        var response = await sendIGDBRequest(`fields *; where id = ${platformID};`, "platforms", token);
-        const platform = response[0];
-
-        console.log("platform->", platform);
-
-        if (platform.id) 
-        {
-          var platform_search = `${platform?.name} ${platform?.slug}`
-      
-          const { data, error } = await supabase
-            .from('platform')
-            .insert([
+              const { data, error } = await supabase
+                .from("theme")
+                .upsert([
+                  { id: response.id, name: response.name, data: response }
+                ])
+                .select();  
+          
+              console.log(`Theme : `, response, data, error);
+              if (error != null) 
               {
-                id: platformID, 
-                search_name: platform_search, 
-                data: platform, 
-                name: platform?.name
+                throw new Error(`ERROR UPSERTING ${response} into theme ${String(error)} id=${id}`);
               }
-            ])
-            .select();
+          }
         }
       }
 
+      if (game.genres)
+      {  
+        for (var genre of game.genres)
+        {
+
+          var response = await sendIGDBRequest(`fields *; where id = ${genre};`, "genres", token);
+          response = response[0];
+
+          if (response) 
+          {
+
+              const { data, error } = await supabase
+                .from("genre")
+                .upsert([
+                  { id: response.id, name: response.name, data: response }
+                ])
+                .select();  
+          
+              console.log(`Genre : `, response, data, error);
+              if (error != null) 
+              {
+                throw new Error(`ERROR UPSERTING ${response} into genre ${String(error)} id=${id}`);
+              }
+          }
+        }
+      }
+
+      if (game.involved_companies)
+      {  
+        for (var company of game.involved_companies)
+        {
+          var response = await sendIGDBRequest(`fields *; where id = ${company};`, "involved_companies", token);
+          response = response[0];
+  
+          if (response) 
+          {
+              
+              var search_name = `${response.name} ${response.slug}`;
+  
+              const { data, error } = await supabase
+                .from("company")
+                .upsert([
+                  { id: response.id, search_name: response.name, data: response }
+                ])
+                .select();  
+          
+              console.log(`Involved Company : `, response, data, error);
+              if (error != null) 
+              {
+                throw new Error(`ERROR UPSERTING ${response} into involved company ${String(error)} id=${id}`);
+              }
+          }
+        }
+  
+      }
+      if (game.collections)
+      {
+
+        for (var collectionID of game.collections)
+          {
+    
+            var response = await sendIGDBRequest(`fields *; where id = ${collectionID};`, "collections", token);
+            response = response[0];     
+    
+            if (response) 
+            {
+                
+                const { data, error } = await supabase
+                  .from("collection")
+                  .upsert([
+                    { id: response.id, name: response.name, data: response }
+                  ])
+                  .select();  
+            
+                console.log(`Collection : `, response, data, error);
+                if (error != null) 
+                {
+                  throw new Error(`ERROR UPSERTING ${response} into ${supaTable} ${String(error)} id=${id}`);
+                }
+            }
+          }
+      }
+
+      if (game.platforms){
+        for (var platformID of game.platforms)
+        {
+          var response = await sendIGDBRequest(`fields *; where id = ${platformID};`, "platforms", token);
+          const platform = response[0];
+
+          console.log("platform->", platform);
+
+          if (platform.id) 
+          {
+            var platform_search = `${platform?.name} ${platform?.slug}`
+        
+            const { data, error } = await supabase
+              .from('platform')
+              .insert([
+                {
+                  id: platformID, 
+                  search_name: platform_search, 
+                  data: platform, 
+                  name: platform?.name
+                }
+              ])
+              .select();
+          }
+        }
+      }
+      
       return {data, error};
     };
  

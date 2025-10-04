@@ -21,6 +21,27 @@ CREATE TABLE game_owned (
     PRIMARY KEY (platform_id, profile_id, game_id)
 );
 
+CREATE TABLE wishlist_game (
+    
+    profile_id UUID REFERENCES profile(id),
+    game_id INTEGER REFERENCES game(id),
+    PRIMARY KEY (profile_id, game_id)
+);
+
+CREATE TABLE playing_game (
+    
+    profile_id UUID REFERENCES profile(id),
+    game_id INTEGER REFERENCES game(id),
+    PRIMARY KEY (profile_id, game_id)
+);
+
+CREATE TABLE finished_game (
+    
+    profile_id UUID REFERENCES profile(id),
+    game_id INTEGER REFERENCES game(id),
+    PRIMARY KEY (profile_id, game_id)
+);
+
 -- Reviews
 CREATE TABLE reviews (
     id INTEGER PRIMARY KEY,

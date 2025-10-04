@@ -7,7 +7,7 @@ async function getLastUpdated(table, supabase) {
 
   console.log("import result->", {data, error});
   
-  if (error ) { 
+  if (data === null || data.length === 0) { 
     console.error("Supabase error:", error);
     
     // Insert a new row for the table
