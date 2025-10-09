@@ -2,7 +2,7 @@ CREATE TABLE profile_index (
   id SERIAL PRIMARY KEY,
   entity_type TEXT, -- 'game', 'character', 'platform', 'company'
   entity_id INT,
-  profile_id UUID REFERENCES profile(id),
+  profile_id UUID REFERENCES auth.users(id),
   profile_name TEXT,
   search_vector_id tsvector,
   search_vector_name tsvector

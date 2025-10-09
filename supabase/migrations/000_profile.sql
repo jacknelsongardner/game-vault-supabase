@@ -1,8 +1,11 @@
 
 -- Profile
 CREATE TABLE profile (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    name TEXT,
+    auth_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id INTEGER UNIQUE GENERATED ALWAYS AS IDENTITY, 
+    username TEXT UNIQUE,
+    first_name TEXT,
+    last_name TEXT,
     birthday TIMESTAMP,
     search_name TEXT,
     avatar_url TEXT,
@@ -10,8 +13,8 @@ CREATE TABLE profile (
 );
 
 CREATE TABLE friend (
-    friendOne UUID REFERENCES profile(id) ON DELETE CASCADE,
-    friendTwo UUID REFERENCES profile(id) ON DELETE CASCADE,
+    friendOne UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    friendTwo UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     PRIMARY KEY (friendOne, friendTwo)
 );
 
@@ -25,7 +28,7 @@ CREATE TABLE badge (
 
 -- BadgesEarned
 CREATE TABLE badges_earned (
-    profile_id UUID REFERENCES profile(id),
+    profile_id UUID REFERENCES auth.users(id),
     badge_id INTEGER REFERENCES badge(id),
     PRIMARY KEY (profile_id, badge_id)
 );

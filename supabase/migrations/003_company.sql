@@ -6,6 +6,12 @@ CREATE TABLE company (
     data JSONB
 );
 
+CREATE TABLE involved_company (
+    id INTEGER PRIMARY KEY,
+    company INTEGER REFERENCES company(id),
+    data JSONB
+);
+
 CREATE TABLE platform_family (
     id INTEGER PRIMARY KEY,
     company INTEGER REFERENCES company(id),
