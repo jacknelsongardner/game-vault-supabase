@@ -43,7 +43,7 @@ CREATE TABLE age_rating (
 
 -- TimeToPlay (Profile ↔ Game)
 CREATE TABLE time_to_play (
-    profile_id UUID REFERENCES profile(id),
+    profile_id UUID REFERENCES auth.users(id),
     game_id INTEGER REFERENCES game(id),
     hours INTEGER,
     minutes INTEGER,
