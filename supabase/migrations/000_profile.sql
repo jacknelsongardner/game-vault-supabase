@@ -22,6 +22,7 @@ CREATE TABLE friend (
 CREATE TABLE badge (
     id INTEGER PRIMARY KEY,
     name TEXT,
+    code TEXT,
     icon_url TEXT,
     description TEXT
 );
