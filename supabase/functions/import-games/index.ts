@@ -32,13 +32,16 @@ Deno.serve(async (req) => {
 
         if (response) 
         {
+            const url = response.url ? `https:${response.url.replace("t_cover", "t_cover_big")}` : "";
 
             const { data, error } = await supabase
               .from(supaTable)
               .upsert([
-                { id: response.id, url: `https:${response.url}`, data: response }
+                { id: response.id, url: `https:${url}`, data: response }
               ])
-              .select();  
+              .select();
+
+            
         
             console.log(`${supaTable} : `, response, data, error);
             if (error != null) 
@@ -177,6 +180,8 @@ Deno.serve(async (req) => {
               {
                 throw new Error(`ERROR UPSERTING ${response} into involved company ${String(error)} id=${id}`);
               }
+
+
           }
         }
   
