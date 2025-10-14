@@ -33,3 +33,10 @@ CREATE TABLE badges_earned (
     badge_id INTEGER REFERENCES badge(id),
     PRIMARY KEY (profile_id, badge_id)
 );
+
+-- Create storage bucket if not exists
+insert into storage.buckets (id, name, public)
+select 'profile-photos', 'profile-photos', true
+where not exists (
+  select 1 from storage.buckets where id = 'profile-photos'
+);
