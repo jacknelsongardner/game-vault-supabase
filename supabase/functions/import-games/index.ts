@@ -7,10 +7,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
-import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
-import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
 import { ImportData } from "../utils/Import.js";
-import { sleep } from "../utils/Sleep.js";
 
 Deno.serve(async (req) => {
   const supabase = createClient(
