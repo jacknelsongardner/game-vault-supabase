@@ -5,6 +5,12 @@ WHERE NOT EXISTS (
   SELECT 1 FROM storage.buckets WHERE id = 'profile-photos'
 );
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Public Access to view profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload their own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update their own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete their own profile photos" ON storage.objects;
+
 -- Grant public access to view photos
 CREATE POLICY "Public Access to view profile photos"
 ON storage.objects FOR SELECT

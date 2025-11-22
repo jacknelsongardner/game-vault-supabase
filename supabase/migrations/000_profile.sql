@@ -4,9 +4,6 @@ CREATE TABLE profile (
     auth_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     id INTEGER UNIQUE GENERATED ALWAYS AS IDENTITY, 
     username TEXT UNIQUE,
-    first_name TEXT,
-    last_name TEXT,
-    birthday TIMESTAMP,
     search_name TEXT,
     avatar_url TEXT,
     bio TEXT
