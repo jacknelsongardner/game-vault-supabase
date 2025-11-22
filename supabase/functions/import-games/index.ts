@@ -32,12 +32,15 @@ Deno.serve(async (req) => {
 
         if (response) 
         {
-            const url = response.url ? `https:${response.url.replace("t_cover", "t_cover_big")}` : "";
+            // IGDB returns URLs in format "//images.igdb.com/..." (protocol-relative)
+            // We need to prepend "https:" once to make it "https://images.igdb.com/..."
+            const rawUrl = response.url ? response.url.replace("t_cover", "t_cover_big") : "";
+            const url = rawUrl.startsWith("//") ? `https:${rawUrl}` : rawUrl;
 
             const { data, error } = await supabase
               .from(supaTable)
               .upsert([
-                { id: response.id, url: `https:${url}`, data: response }
+                { id: response.id, url: url, data: response }
               ])
               .select();
 
