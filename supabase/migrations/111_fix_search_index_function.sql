@@ -1,13 +1,4 @@
-CREATE TABLE search_index (
-  id SERIAL PRIMARY KEY,
-  entity_type TEXT, -- 'game', 'character', 'platform', 'company'
-  entity_id INT,
-  entity_name TEXT,
-  search_vector tsvector
-);
-
-CREATE INDEX search_index_idx ON search_index USING GIN (search_vector);
-
+-- Fix search index function to handle profile table with username field
 CREATE OR REPLACE FUNCTION update_search_index()
 RETURNS TRIGGER AS $$  
 DECLARE
