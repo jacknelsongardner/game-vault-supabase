@@ -3,8 +3,8 @@
 CREATE TABLE game (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    search_name TEXT,
-    data JSONB
+    search_name TEXT --,
+    ----data JSONB
 );
 
 -- Country (wraps Entity)
@@ -67,8 +67,8 @@ CREATE TABLE entry_in_franchise (
 -- GenreEnum
 CREATE TABLE genre (
     id INTEGER PRIMARY KEY,
-    name TEXT,
-    data JSONB
+    name TEXT--,
+    ----data JSONB
 );
 
 -- Genre (Game ↔ GenreEnum)
@@ -139,20 +139,20 @@ CREATE TABLE tagged_game (
 
 CREATE TABLE theme (
     id INTEGER PRIMARY KEY,
-    name TEXT,
-    data JSONB
+    name TEXT--,
+    --data JSONB
 );
 
 CREATE TABLE alt_name (
     id INTEGER PRIMARY KEY,
-    name TEXT,
-    data JSONB
+    name TEXT--,
+    --data JSONB
 );
 
 CREATE TABLE collection (
     id INTEGER PRIMARY KEY,
-    name TEXT,
-    data JSONB
+    name TEXT--,
+    --data JSONB
 );
 
 CREATE TABLE in_collection (
@@ -163,6 +163,6 @@ CREATE TABLE in_collection (
 
 CREATE TABLE website (
     id INTEGER PRIMARY KEY,
-    url TEXT,
-    data JSONB
+    url TEXT--,
+    --data JSONB
 );
