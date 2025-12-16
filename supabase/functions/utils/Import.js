@@ -1,66 +1,60 @@
-
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { getLastUpdated, insertLastUpdated } from './Update.js';
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
-import { getLastUpdated, insertLastUpdated } from '../utils/Update.js'
-import { cpuStart, cpuStop, wallStart, wallStop } from "../utils/Clock.js";
+export async function ImportData(table, dataFunction, supabase, supabase1) {
+  let log = [];
+  let errors = [];
+  
+  const { data: sanity, error: sanityError } = await supabase1
+    .from('game')
+    .select('id')
+    .order('id', { ascending: true })
+    .limit(5);
 
-async function ImportData(query, table, dataFunction, supabase)
-{
+  console.log("SANITY CHECK game:", sanity, sanityError);
 
+  console.log("hello");
   try {
-    
-    var token =  await getIGDBToken();
+    let { lastid = 0, count = 0 } = await getLastUpdated(table, supabase);
+    let importID = lastid;
 
-    var log = []
-    var errors = []
+    console.log(`Starting import for ${table}, next ID: ${importID}, count: ${count}`);
+    console.log("USING SUPABASE1 URL:", supabase1.supabaseUrl);
 
-    var updated = await getLastUpdated(table, supabase);
+    while (importID <= count) {
+      try {
+        const { data, error } = await supabase1
+          .from(table)
+          .select('*')
+          .eq('id', importID)
+          .single();
 
-    var importID = updated["lastid"]
-    var count = updated["count"]
+        console.log(data);
 
-    console.log("next", table, " ID to import: ", importID);
-    console.log("count: ", count);
+        if (data) {
+          const row = { id: data.id, ...(data.data || {}) };
+          await dataFunction(supabase, row);
+          await insertLastUpdated(table, importID, supabase);
 
-    while (true) {
-        
-        const response =  await sendIGDBRequest(`fields *; where id = ${importID};`, query, token);
-
-        const IGDBdata = response[0]
-
-        if (response.length > 0) {
-
-          const { data, error } = await dataFunction(supabase, IGDBdata);
-
-          log.push(data);
-          errors.push(error);
-
-          console.log("Data upserted ")
-
-          if (error) {
-            console.log(`Error upserting system: ${error.message}`);
-          }
+          log.push(`Imported ID ${importID} from ${table}`);
+          console.log(`Imported ID ${importID} from ${table}`);
+        } else {
+          console.warn(`ID ${importID} not found in ${table}`);
+          errors.push(`ID ${importID} not found in ${table}`);
         }
+      } catch (err) {
+        console.warn(`Error fetching ID ${importID} from ${table}:`, err);
+        errors.push(`Error fetching ID ${importID} from ${table}: ${String(err)}`);
+      }
 
-        if (importID!= count)
-        {
-          importID+= 1;
-          console.log(`next up: ${importID}`);
-          insertLastUpdated(table, importID, supabase);
-        } 
-        else {importID= 0; console.log("finished all"); break; }
-
+      importID++;
     }
 
+    console.log(`Finished importing ${table}`);
     return { log, errors };
   } catch (err) {
-    
-    console.error("Unexpected import error", err);
-    return { log, errors};
+    console.error("Unexpected import error:", err);
+    errors.push(String(err));
+    return { log, errors };
   }
 }
-
-
-export {ImportData}
