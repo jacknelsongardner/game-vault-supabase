@@ -6,7 +6,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getIGDBToken, sendIGDBRequest } from '../utils/IGDB.js';
 import { ImportData } from "../utils/Import.js";
 
 Deno.serve(async (req: Request) => {
@@ -16,19 +15,41 @@ Deno.serve(async (req: Request) => {
     { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
   )
 
+  const supabaseIGDB = createClient(
+    Deno.env.get('SUPABASE_IGDB_URL') ?? 'http://host.docker.internal:18923',
+    Deno.env.get('SUPABASE_IGDB_ANON_KEY') ?? 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH'
+  );
+
   let log: string[] = [];
   let errors: string[] = [];
 
   try {
 
-    const token = await getIGDBToken();
+    
 
     const upsertImage = async (supabase: SupabaseClient, supaTable: string, igdbTable: string, id: number) => {
 
       if (id) {
         
-        let response = await sendIGDBRequest(`fields *; where id = ${id};`, igdbTable, token);
-        const imageData = response[0];
+        const { data, error } = await supabaseIGDB
+          .from(igdbTable)
+          .select('*')
+          .eq('id', id)
+          .single(); // get single row
+
+        if (error) {
+          console.error(`Error fetching ID ${id} from ${table}:`, error);
+          return null;
+        }
+
+        if (!data) {
+          console.warn(`ID ${id} not found in ${table}`);
+          return null;
+        }
+
+        // The actual photo info is inside the JSONB column "data"
+        const imageData = data.data; 
+        console.log(`Fetched image from ${table} ID ${id}:`, imageData);
 
         if (imageData) 
         {
@@ -40,7 +61,7 @@ Deno.serve(async (req: Request) => {
             const { data, error } = await supabase
               .from(supaTable)
               .upsert([
-                { id: imageData.id, url: url, data: imageData }
+                { id: imageData.id, url: url}
               ])
               .select();
 
@@ -76,10 +97,27 @@ Deno.serve(async (req: Request) => {
       {
         for (const alt of game.alternative_names)
         {
-          const response = await sendIGDBRequest(`fields *; where id = ${alt};`, "alternative_names", token);
-          if (response && response[0] && response[0].name)
+          
+
+          const { data, error } = await supabaseIGDB
+            .from("alternative_names")
+            .select('*')
+            .eq('id', alt)
+            .single(); // get single row
+
+          if (error) {
+            console.error(`Error fetching ID ${id} from ${table}:`, error);
+            return null;
+          }
+
+          if (!data) {
+            console.warn(`ID ${id} not found in ${table}`);
+            return null;
+          }
+
+          if (data.data.name)
           {
-            alts.push(response[0].name);
+            alts.push(data.data.name);
           }
         }
       }
@@ -92,26 +130,40 @@ Deno.serve(async (req: Request) => {
           .from('game')
           .upsert([
             { id: game_id, 
-              search_name: game_search, 
-              data: game, 
+              search_name: game_search,
               name: game?.name 
             }
           ])
           .select();
 
-      await upsertImage(supabase, "cover", "covers", game.cover);
-      await upsertImageList(supabase, "artwork", "artworks", game.artworks);
-      await upsertImageList(supabase, "screenshot", "screenshots", game.screenshots);
-      await upsertImageList(supabase, "game_video", "game_videos", game.videos);
-      await upsertImageList(supabase, "website", "websites", game.videos);
+      await upsertImage(supabase, "cover", "cover", game.cover);
+      await upsertImageList(supabase, "artwork", "artwork", game.artworks);
+      await upsertImageList(supabase, "screenshot", "screenshot", game.screenshots);
+      await upsertImageList(supabase, "game_video", "game_video", game.videos);
+      await upsertImageList(supabase, "website", "website", game.videos);
 
       if (game.themes)
       {
         for (const theme of game.themes)
         {
 
-          let response = await sendIGDBRequest(`fields *; where id = ${theme};`, "themes", token);
-          const themeData = response[0];
+          const { data, error } = await supabaseIGDB
+            .from("theme")
+            .select('*')
+            .eq('id', theme)
+            .single(); // get single row
+
+          if (error) {
+            console.error(`Error fetching ID ${id} from ${table}:`, error);
+            return null;
+          }
+
+          if (!data) {
+            console.warn(`ID ${id} not found in ${table}`);
+            return null;
+          }
+
+          let themeData = data.data;
 
           if (themeData) 
           {
@@ -119,7 +171,7 @@ Deno.serve(async (req: Request) => {
               const { data, error } = await supabase
                 .from("theme")
                 .upsert([
-                  { id: themeData.id, name: themeData.name, data: themeData }
+                  { id: themeData.id, name: themeData.name}
                 ])
                 .select();  
           
@@ -137,8 +189,23 @@ Deno.serve(async (req: Request) => {
         for (const genre of game.genres)
         {
 
-          let response = await sendIGDBRequest(`fields *; where id = ${genre};`, "genres", token);
-          const genreData = response[0];
+          const { data, error } = await supabaseIGDB
+            .from("genre")
+            .select('*')
+            .eq('id', genre)
+            .single(); // get single row
+
+          if (error) {
+            console.error(`Error fetching ID ${id} from ${table}:`, error);
+            return null;
+          }
+
+          if (!data) {
+            console.warn(`ID ${id} not found in ${table}`);
+            return null;
+          }
+
+          let genreData = data.data;
 
           if (genreData) 
           {
@@ -146,7 +213,7 @@ Deno.serve(async (req: Request) => {
               const { data, error } = await supabase
                 .from("genre")
                 .upsert([
-                  { id: genreData.id, name: genreData.name, data: genreData }
+                  { id: genreData.id, name: genreData.name}
                 ])
                 .select();  
           
@@ -163,8 +230,25 @@ Deno.serve(async (req: Request) => {
       {  
         for (const company of game.involved_companies)
         {
-          let response = await sendIGDBRequest(`fields *; where id = ${company};`, "involved_companies", token);
-          const companyData = response[0];
+          
+
+          const { data, error } = await supabaseIGDB
+            .from("company")
+            .select('*')
+            .eq('id', company)
+            .single(); // get single row
+
+          if (error) {
+            console.error(`Error fetching ID ${id} from ${table}:`, error);
+            return null;
+          }
+
+          if (!data) {
+            console.warn(`ID ${id} not found in ${table}`);
+            return null;
+          }
+
+          let companyData = data.data;
   
           if (companyData) 
           {
@@ -174,7 +258,7 @@ Deno.serve(async (req: Request) => {
               const { data, error } = await supabase
                 .from("company")
                 .upsert([
-                  { id: companyData.id, search_name: companyData.name, data: companyData }
+                  { id: companyData.id, search_name: companyData.name}
                 ])
                 .select();  
           
@@ -195,8 +279,23 @@ Deno.serve(async (req: Request) => {
         for (const collectionID of game.collections)
           {
     
-            let response = await sendIGDBRequest(`fields *; where id = ${collectionID};`, "collections", token);
-            const collectionData = response[0];     
+          const { data, error } = await supabaseIGDB
+            .from("collection")
+            .select('*')
+            .eq('id', collectionID)
+            .single(); // get single row
+
+          if (error) {
+            console.error(`Error fetching ID ${id} from ${table}:`, error);
+            return null;
+          }
+
+          if (!data) {
+            console.warn(`ID ${id} not found in ${table}`);
+            return null;
+          }
+
+          let collectionData = data.data;
     
             if (collectionData) 
             {
@@ -204,7 +303,7 @@ Deno.serve(async (req: Request) => {
                 const { data, error } = await supabase
                   .from("collection")
                   .upsert([
-                    { id: collectionData.id, name: collectionData.name, data: collectionData }
+                    { id: collectionData.id, name: collectionData.name}
                   ])
                   .select();  
             
@@ -220,8 +319,24 @@ Deno.serve(async (req: Request) => {
       if (game.platforms){
         for (const platformID of game.platforms)
         {
-          const response = await sendIGDBRequest(`fields *; where id = ${platformID};`, "platforms", token);
-          const platform = response[0];
+
+          const { data, error } = await supabaseIGDB
+            .from("platform")
+            .select('*')
+            .eq('id', platformID)
+            .single(); // get single row
+
+          if (error) {
+            console.error(`Error fetching ID ${id} from ${table}:`, error);
+            return null;
+          }
+
+          if (!data) {
+            console.warn(`ID ${id} not found in ${table}`);
+            return null;
+          }
+
+          const platform = data.data;
 
           console.log("platform->", platform);
 
@@ -235,7 +350,6 @@ Deno.serve(async (req: Request) => {
                 {
                   id: platformID, 
                   search_name: platform_search, 
-                  data: platform, 
                   name: platform?.name
                 }
               ])
@@ -247,7 +361,9 @@ Deno.serve(async (req: Request) => {
       return {data, error};
     };
  
-    const result = await ImportData("games", "game", getData, supabase);
+
+  console.log("hello4");
+    const result = await ImportData("game", getData, supabase, supabaseIGDB);
     log = result.log || [];
     errors = result.errors || [];
 
