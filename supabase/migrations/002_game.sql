@@ -65,18 +65,17 @@ CREATE TABLE entry_in_franchise (
 );
 
 -- GenreEnum
-CREATE TABLE genre (
+CREATE TABLE genre_enum (
     id INTEGER PRIMARY KEY,
-    name TEXT--,
-    ----data JSONB
+    name TEXT
 );
 
 -- Genre (Game ↔ GenreEnum)
--- CREATE TABLE genre (
---     game_id INTEGER REFERENCES game(id),
---     genre_id INTEGER REFERENCES genre_enum(id),
---     PRIMARY KEY (game_id, genre_id)
--- );
+CREATE TABLE genre (
+    game_id INTEGER REFERENCES game(id),
+    genre_id INTEGER REFERENCES genre_enum(id),
+    PRIMARY KEY (game_id, genre_id)
+);
 
 -- Series
 CREATE TABLE series (
@@ -137,11 +136,18 @@ CREATE TABLE tagged_game (
     PRIMARY KEY (game_id, tag_id)
 );
 
-CREATE TABLE theme (
+CREATE TABLE theme_enum (
     id INTEGER PRIMARY KEY,
     name TEXT--,
     --data JSONB
 );
+
+CREATE TABLE theme (
+    game_id INTEGER REFERENCES game(id),
+    theme_id INTEGER REFERENCES theme_enum(id),
+    PRIMARY KEY (game_id, theme_id)
+);
+
 
 CREATE TABLE alt_name (
     id INTEGER PRIMARY KEY,

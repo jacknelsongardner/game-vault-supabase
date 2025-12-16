@@ -2,14 +2,13 @@
 CREATE TABLE company (
     id INTEGER PRIMARY KEY,
     search_name TEXT,
-    name TEXT,
-    data JSONB
+    name TEXT
 );
 
 CREATE TABLE involved_company (
-    id INTEGER PRIMARY KEY,
-    company INTEGER REFERENCES company(id),
-    data JSONB
+    company_id INTEGER REFERENCES company(id),
+    game_id INTEGER REFERENCES game(id),
+    PRIMARY KEY (game_id, company_id)
 );
 
 CREATE TABLE platform_family (
