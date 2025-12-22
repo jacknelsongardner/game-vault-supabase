@@ -10,7 +10,7 @@ CREATE INDEX IF NOT EXISTS idx_post_comment_parent_comment_id ON post_comment(pa
 
 -- Prevent self-referencing parent
 ALTER TABLE post_comment
-ADD CONSTRAINT IF NOT EXISTS post_comment_no_self_parent CHECK (
+ADD CONSTRAINT post_comment_no_self_parent CHECK (
   parent_comment_id IS NULL OR parent_comment_id <> id
 );
 
