@@ -151,14 +151,12 @@ CREATE TABLE theme (
 
 CREATE TABLE alt_name (
     id INTEGER PRIMARY KEY,
-    name TEXT--,
-    --data JSONB
+    name TEXT
 );
 
 CREATE TABLE collection (
     id INTEGER PRIMARY KEY,
-    name TEXT--,
-    --data JSONB
+    name TEXT
 );
 
 CREATE TABLE in_collection (
@@ -169,6 +167,5 @@ CREATE TABLE in_collection (
 
 CREATE TABLE website (
     id INTEGER PRIMARY KEY,
-    url TEXT--,
-    --data JSONB
+    url TEXT
 );

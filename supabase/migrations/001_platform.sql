@@ -3,10 +3,10 @@
 CREATE TABLE platform (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    search_name TEXT,
+    search_name TEXT--,
     --alternate_name TEXT,
     --abbreviation TEXT, 
-    data JSONB
+    --data JSONB
 );
 
 CREATE TABLE platform_enum (
@@ -35,6 +35,6 @@ CREATE TABLE platform_logo (
 
 CREATE TABLE platform_category (
     id INTEGER PRIMARY KEY,
-    name TEXT,
-    data JSONB
+    name TEXT--,
+    --data JSONB
 );

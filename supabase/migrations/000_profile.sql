@@ -1,3 +1,5 @@
+create extension if not exists vector;
+
 
 -- Profile
 CREATE TABLE profile (
