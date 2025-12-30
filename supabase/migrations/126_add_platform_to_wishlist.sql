@@ -8,10 +8,10 @@ ALTER TABLE wishlist_game
 ADD COLUMN IF NOT EXISTS platform_id INTEGER;
 
 -- For existing records without platform_id, set a default platform
--- This will set platform_id to 1 for existing wishlist entries if they exist
+-- This will set platform_id to 6 (PC) for existing wishlist entries
 -- You may want to adjust this based on your needs
 UPDATE wishlist_game 
-SET platform_id = 1 
+SET platform_id = 6 
 WHERE platform_id IS NULL;
 
 -- Now make platform_id NOT NULL and add foreign key constraint
