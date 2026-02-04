@@ -873,3 +873,4 @@ node_modules/supabase/README.md
 node_modules/supabase/bin/supabase
 node_modules/supabase/scripts/postinstall.js
 supabase/.temp/cli-latest
+node_modules
