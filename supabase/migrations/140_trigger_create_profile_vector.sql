@@ -2,11 +2,12 @@
 create extension if not exists vector;
 
 
-create table profile_interests (
-  auth_id uuid primary key references auth.users(id) on delete cascade,
-  game_vector vector,   -- vector for game genres or whatever else we want to utilize
-  weights vector        -- per-dimension weights
-);
+-- Table already created in 139_profile_vectors.sql, removed duplicate
+-- create table profile_interests (
+--   auth_id uuid primary key references auth.users(id) on delete cascade,
+--   game_vector vector,   -- vector for game genres or whatever else we want to utilize
+--   weights vector        -- per-dimension weights
+-- );
 
 
 create or replace function create_profile_vectors()
