@@ -3,8 +3,17 @@
 CREATE TABLE game (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    search_name TEXT --,
-    ----data JSONB
+    alternative_names TEXT[],
+    platform_family TEXT,
+    search_name TEXT,
+    covers INTEGER[],
+    platforms JSONB,
+    artworks TEXT[],
+    bundles INTEGER[],
+    genres JSONB,
+    franchises JSONB,
+    release_date TEXT,
+    expansions INT[]
 );
 
 -- Country (wraps Entity)
@@ -169,3 +178,14 @@ CREATE TABLE website (
     id INTEGER PRIMARY KEY,
     url TEXT
 );
+
+CREATE TABLE rated (
+    game_id INTEGER REFERENCES game(id),
+    rating_id INTEGER REFERENCES rating(id),
+    PRIMARY KEY (game_id, rating_id)
+);
+
+CREATE TABLE rating (
+    id INTEGER PRIMARY KEY,
+    url TEXT
+);    
