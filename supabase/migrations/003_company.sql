@@ -11,12 +11,6 @@ CREATE TABLE involved_company (
     PRIMARY KEY (game_id, company_id)
 );
 
-CREATE TABLE platform_family (
-    id INTEGER PRIMARY KEY,
-    company INTEGER REFERENCES company(id),
-    name TEXT
-);
-
 -- Developed (Game ↔ Company)
 CREATE TABLE developed (
     game_id INTEGER REFERENCES game(id),
