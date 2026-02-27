@@ -1,14 +1,63 @@
 -- =====================================================
--- Follower System: Triggers & Helper Functions
+-- Follower System (self-contained upgrade migration)
 -- =====================================================
--- follower table + indexes   → 000_profile.sql
--- RLS policies               → 102_rls_policies.sql
--- get_closest_friends update → 142_function_friends_genre.sql
--- This migration adds the count-maintenance trigger and query helpers.
+-- Replaces the old bidirectional `friend` table with a
+-- one-directional `follower` table, adds cached count
+-- columns to profile, applies RLS, and installs the
+-- count-maintenance trigger and query helper functions.
 -- =====================================================
 
 -- =====================================================
--- Trigger: Keep follower_count / following_count in sync
+-- 1. Drop the old friend table and its RLS policies
+-- =====================================================
+
+DROP TABLE IF EXISTS friend CASCADE;
+
+-- =====================================================
+-- 2. Create the follower table
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS follower (
+    follower_id  UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    following_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (follower_id, following_id),
+    CHECK (follower_id != following_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_follower_follower_id ON follower(follower_id);
+CREATE INDEX IF NOT EXISTS idx_follower_following_id ON follower(following_id);
+CREATE INDEX IF NOT EXISTS idx_follower_created_at   ON follower(created_at DESC);
+
+-- =====================================================
+-- 3. Add cached count columns to profile
+-- =====================================================
+
+ALTER TABLE profile
+    ADD COLUMN IF NOT EXISTS follower_count  INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS following_count INTEGER NOT NULL DEFAULT 0;
+
+-- =====================================================
+-- 4. RLS for follower table
+-- =====================================================
+
+ALTER TABLE follower ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Follower relationships are viewable by everyone" ON follower;
+DROP POLICY IF EXISTS "Users can follow others"   ON follower;
+DROP POLICY IF EXISTS "Users can unfollow others" ON follower;
+
+CREATE POLICY "Follower relationships are viewable by everyone"
+    ON follower FOR SELECT USING (true);
+
+CREATE POLICY "Users can follow others"
+    ON follower FOR INSERT WITH CHECK (auth.uid() = follower_id);
+
+CREATE POLICY "Users can unfollow others"
+    ON follower FOR DELETE USING (auth.uid() = follower_id);
+
+-- =====================================================
+-- 5. Trigger: Keep follower_count / following_count in sync
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION update_follower_counts()
@@ -25,12 +74,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_update_follower_counts ON follower;
 CREATE TRIGGER trigger_update_follower_counts
 AFTER INSERT OR DELETE ON follower
 FOR EACH ROW EXECUTE FUNCTION update_follower_counts();
 
 -- =====================================================
--- Helper: is_following(user_a, user_b) → boolean
+-- 6. Helper: is_following(user_a, user_b) → boolean
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION is_following(user_a UUID, user_b UUID)
@@ -44,7 +94,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- =====================================================
--- Helper: are_mutual_followers(user_a, user_b) → boolean
+-- 7. Helper: are_mutual_followers(user_a, user_b) → boolean
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION are_mutual_followers(user_a UUID, user_b UUID)
@@ -60,7 +110,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- =====================================================
--- Helper: get_mutual_followers(user_a, user_b) → table
+-- 8. Helper: get_mutual_followers(user_a, user_b) → table
 -- Returns users that both user_a and user_b follow
 -- =====================================================
 
