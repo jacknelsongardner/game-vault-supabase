@@ -3,16 +3,16 @@ returns table(friend_id uuid, similarity float)
 language plpgsql
 as $$
 declare
-    has_friends boolean;
+    has_following boolean;
 begin
-    -- Check if the user has any direct friends
+    -- Check if the user follows anyone
     select exists (
-        select 1 from friend 
-        where friendOne = user_id or friendTwo = user_id
-    ) into has_friends;
+        select 1 from follower
+        where follower_id = user_id
+    ) into has_following;
 
-    if not has_friends then
-        -- No friends: compare to all other users
+    if not has_following then
+        -- No follows: compare to all other users
         return query
         select
             pi.auth_id as friend_id,
@@ -23,26 +23,24 @@ begin
         order by similarity desc
         limit top_n;
     else
-        -- User has friends: traverse friends up to `degrees`
+        -- Traverse the follow network up to `degrees` hops
         return query
-        with recursive friend_network(level, fid) as (
-            select 1, f.friendTwo
-            from friend f
-            where f.friendOne = user_id
-            union
-            select 1, f.friendOne
-            from friend f
-            where f.friendTwo = user_id
+        with recursive follow_network(level, fid) as (
+            -- Direct follows (degree 1)
+            select 1, f.following_id
+            from follower f
+            where f.follower_id = user_id
             union all
-            select fn.level + 1,
-                   case when f.friendOne = fn.fid then f.friendTwo else f.friendOne end
-            from friend_network fn
-            join friend f on f.friendOne = fn.fid or f.friendTwo = fn.fid
+            -- Deeper hops: people followed by those we already found
+            select fn.level + 1, f.following_id
+            from follow_network fn
+            join follower f on f.follower_id = fn.fid
             where fn.level < degrees
+              and f.following_id <> user_id
         ),
         network_vectors as (
             select distinct fn.fid as friend_id, pi.game_vector
-            from friend_network fn
+            from follow_network fn
             join profile_interests pi on pi.auth_id = fn.fid
         ),
         user_vector as (

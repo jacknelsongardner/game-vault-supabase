@@ -8,14 +8,23 @@ CREATE TABLE profile (
     username TEXT UNIQUE,
     search_name TEXT,
     avatar_url TEXT,
-    bio TEXT
+    bio TEXT,
+    follower_count INTEGER NOT NULL DEFAULT 0,
+    following_count INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE friend (
-    friendOne UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    friendTwo UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    PRIMARY KEY (friendOne, friendTwo)
+-- One-directional follower relationship (follower_id follows following_id)
+CREATE TABLE follower (
+    follower_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    following_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (follower_id, following_id),
+    CHECK (follower_id != following_id)
 );
+
+CREATE INDEX idx_follower_follower_id ON follower(follower_id);
+CREATE INDEX idx_follower_following_id ON follower(following_id);
+CREATE INDEX idx_follower_created_at ON follower(created_at DESC);
 
 -- Badge
 CREATE TABLE badge (

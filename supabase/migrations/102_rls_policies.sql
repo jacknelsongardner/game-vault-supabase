@@ -1,6 +1,6 @@
 -- Enable Row Level Security on all tables
 ALTER TABLE profile ENABLE ROW LEVEL SECURITY;
-ALTER TABLE friend ENABLE ROW LEVEL SECURITY;
+ALTER TABLE follower ENABLE ROW LEVEL SECURITY;
 ALTER TABLE badge ENABLE ROW LEVEL SECURITY;
 ALTER TABLE badges_earned ENABLE ROW LEVEL SECURITY;
 
@@ -26,21 +26,21 @@ CREATE POLICY "Users can delete their own profile"
 ON profile FOR DELETE
 USING (auth.uid() = auth_id);
 
--- Friend policies
--- Users can view friendships they're part of
-CREATE POLICY "Users can view their own friendships"
-ON friend FOR SELECT
-USING (auth.uid() = friendOne OR auth.uid() = friendTwo);
+-- Follower policies
+-- Everyone can view follower relationships (needed for public profiles)
+CREATE POLICY "Follower relationships are viewable by everyone"
+ON follower FOR SELECT
+USING (true);
 
--- Users can create friendships involving themselves
-CREATE POLICY "Users can create friendships for themselves"
-ON friend FOR INSERT
-WITH CHECK (auth.uid() = friendOne OR auth.uid() = friendTwo);
+-- Only the follower can create the relationship
+CREATE POLICY "Users can follow others"
+ON follower FOR INSERT
+WITH CHECK (auth.uid() = follower_id);
 
--- Users can delete friendships they're part of
-CREATE POLICY "Users can delete their own friendships"
-ON friend FOR DELETE
-USING (auth.uid() = friendOne OR auth.uid() = friendTwo);
+-- Only the follower can remove the relationship
+CREATE POLICY "Users can unfollow others"
+ON follower FOR DELETE
+USING (auth.uid() = follower_id);
 
 -- Badge policies
 -- Everyone can read badges (they're public achievements)
