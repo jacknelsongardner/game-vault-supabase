@@ -14,6 +14,7 @@ ALTER TABLE profile
 
 -- 4. Same pattern for content_violation
 ALTER TABLE content_violation DROP CONSTRAINT IF EXISTS content_violation_action_taken_check;
+ALTER TABLE content_violation DROP CONSTRAINT IF EXISTS violation_action_check;
 
 UPDATE content_violation SET action_taken = 'account_banned' WHERE action_taken = 'account_deactivated';
 
