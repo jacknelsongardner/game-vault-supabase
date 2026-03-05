@@ -1,19 +1,22 @@
 -- Rename 'deactivated' → 'banned' for clarity.
 -- Also fixes the atomic warning increment RPC and adds suspend/ban helpers.
 
--- 1. Rename existing 'deactivated' rows FIRST (before constraint is applied)
+-- 1. Drop the old constraint first (it only allows 'deactivated', not 'banned')
+ALTER TABLE profile DROP CONSTRAINT IF EXISTS profile_account_status_check;
+
+-- 2. Now rename existing 'deactivated' rows (no constraint blocking the UPDATE)
 UPDATE profile SET account_status = 'banned' WHERE account_status = 'deactivated';
 
--- 2. Drop and recreate the CHECK constraint on profile.account_status
-ALTER TABLE profile DROP CONSTRAINT IF EXISTS profile_account_status_check;
+-- 3. Add the new constraint with 'banned' included
 ALTER TABLE profile
   ADD CONSTRAINT profile_account_status_check
   CHECK (account_status IN ('active', 'suspended', 'banned'));
 
--- 3. Rename action_taken values FIRST, then recreate constraint
+-- 4. Same pattern for content_violation
+ALTER TABLE content_violation DROP CONSTRAINT IF EXISTS content_violation_action_taken_check;
+
 UPDATE content_violation SET action_taken = 'account_banned' WHERE action_taken = 'account_deactivated';
 
-ALTER TABLE content_violation DROP CONSTRAINT IF EXISTS content_violation_action_taken_check;
 ALTER TABLE content_violation
   ADD CONSTRAINT content_violation_action_taken_check
   CHECK (action_taken IN (
